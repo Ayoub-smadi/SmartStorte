@@ -192,7 +192,7 @@ export default function AdminPage() {
   return (
     <div>
       {/* Admin Header */}
-      <div style={{ background: 'linear-gradient(135deg, #1565C0, #0D47A1)', padding: '28px 0 0' }}>
+      <div style={{ background: '#2A2A2A', padding: '28px 0 0' }}>
         <div className="container" style={{ padding: '0 20px' }}>
           <h1 style={{ color: '#fff', fontSize: 26, fontWeight: 800, marginBottom: 20 }}>
             ⚙️ لوحة التحكم

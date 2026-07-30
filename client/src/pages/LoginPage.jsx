@@ -35,7 +35,12 @@ export default function LoginPage() {
         {/* Card */}
         <div style={{ background: '#fff', borderRadius: 20, padding: '48px 40px', boxShadow: '0 8px 40px rgba(21,101,192,0.15)', border: '1px solid var(--border)' }}>
           <div style={{ textAlign: 'center', marginBottom: 36 }}>
-            <div style={{ width: 60, height: 60, background: 'linear-gradient(135deg, #0D6E08, #095405)', borderRadius: 16, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, marginBottom: 14, boxShadow: '0 4px 14px rgba(13,110,8,0.3)' }}>🌱</div>
+            <div style={{ marginBottom: 14, display: 'inline-flex' }}>
+              <svg width="60" height="60" viewBox="0 0 42 42" fill="none">
+                <circle cx="21" cy="21" r="20" stroke="#6DC534" strokeWidth="2.5" fill="#2A2A2A"/>
+                <polygon points="23,7 14,23 21,23 19,35 28,19 21,19" fill="#6DC534"/>
+              </svg>
+            </div>
             <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text)', marginBottom: 6 }}>تسجيل الدخول</h1>
             <p style={{ color: 'var(--text-light)', fontSize: 14 }}>أدخل بيانات الدخول للوصول للحساب</p>
           </div>
