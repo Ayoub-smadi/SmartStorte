@@ -27,39 +27,43 @@ export default function HomePage() {
     <div>
       {/* Hero */}
       <div style={{
-        background: 'linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%)',
+        background: 'linear-gradient(135deg, #095405 0%, #0D6E08 50%, #138A0D 100%)',
         padding: '80px 20px', textAlign: 'center', position: 'relative', overflow: 'hidden'
       }}>
+        {/* Pattern overlay */}
         <div style={{
-          position: 'absolute', inset: 0, opacity: 0.05,
-          backgroundImage: 'radial-gradient(circle at 20% 50%, #fff 1px, transparent 1px), radial-gradient(circle at 80% 20%, #fff 1px, transparent 1px)',
-          backgroundSize: '40px 40px'
+          position: 'absolute', inset: 0, opacity: 0.06,
+          backgroundImage: 'radial-gradient(circle at 25% 50%, #fff 1px, transparent 1px), radial-gradient(circle at 75% 25%, #fff 1px, transparent 1px)',
+          backgroundSize: '36px 36px'
         }} />
         <div style={{ position: 'relative', maxWidth: 700, margin: '0 auto' }}>
-          <div style={{ display: 'inline-block', background: 'rgba(255,111,0,0.2)', color: '#FF6F00', padding: '6px 20px', borderRadius: 30, fontSize: 14, fontWeight: 700, marginBottom: 20, border: '1px solid rgba(255,111,0,0.4)' }}>
-            🛒 تسوق أجهزتك المنزلية
+          <div style={{ display: 'inline-block', background: 'rgba(245,166,35,0.2)', color: '#F5A623', padding: '6px 20px', borderRadius: 30, fontSize: 14, fontWeight: 700, marginBottom: 20, border: '1px solid rgba(245,166,35,0.45)' }}>
+            🌱 بذور زراعية للمحترفين
           </div>
           <h1 style={{ color: '#fff', fontSize: 'clamp(28px, 5vw, 52px)', fontWeight: 900, marginBottom: 20, lineHeight: 1.2 }}>
-            أفضل الأجهزة الكهربائية<br />
-            <span style={{ color: '#FF6F00' }}>بأفضل الأسعار</span>
+            أجود البذور الزراعية<br />
+            <span style={{ color: '#F5A623' }}>لكل موسم وكل محصول</span>
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 17, marginBottom: 36, lineHeight: 1.8 }}>
-            تشكيلة واسعة من التلفزيونات، الثلاجات، الغسالات، المكيفات وأكثر
+          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 17, marginBottom: 36, lineHeight: 1.8 }}>
+            محاصيل شتوية وصيفية، نباتات زينة، ومايكروجرين — بذور مختارة بعناية للمزارع المحترف
           </p>
           <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
             <a href="#/products" className="btn btn-accent" style={{ fontSize: 16, padding: '13px 32px' }}>
-              🛍️ تسوق الآن
+              🛒 تسوق الآن
             </a>
-            <a href="#/products?featured=1" className="btn btn-outline" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.5)', fontSize: 16, padding: '13px 32px' }}>
+            <a href="#/products?featured=1" style={{
+              background: 'rgba(255,255,255,0.15)', color: '#fff', border: '2px solid rgba(255,255,255,0.5)',
+              padding: '13px 32px', borderRadius: 8, fontWeight: 700, fontSize: 16, display: 'inline-flex', alignItems: 'center', gap: 8
+            }}>
               ⭐ العروض المميزة
             </a>
           </div>
         </div>
         {/* Stats */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 40, marginTop: 60, flexWrap: 'wrap' }}>
-          {[['100+', 'منتج متوفر'], ['6', 'أقسام رئيسية'], ['توصيل', 'سريع'], ['ضمان', 'سنة كاملة']].map(([val, label]) => (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 48, marginTop: 60, flexWrap: 'wrap' }}>
+          {[['100+', 'صنف من البذور'], ['5', 'أقسام رئيسية'], ['توصيل', 'سريع'], ['جودة', 'مضمونة']].map(([val, label]) => (
             <div key={label} style={{ textAlign: 'center' }}>
-              <div style={{ color: '#FF6F00', fontSize: 26, fontWeight: 900 }}>{val}</div>
+              <div style={{ color: '#F5A623', fontSize: 26, fontWeight: 900 }}>{val}</div>
               <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13 }}>{label}</div>
             </div>
           ))}
@@ -81,11 +85,11 @@ export default function HomePage() {
 
       {/* Featured */}
       {featured.length > 0 && (
-        <div style={{ background: 'linear-gradient(135deg, #fff8e1, #fff3cd)', padding: '60px 0' }}>
+        <div style={{ background: 'linear-gradient(135deg, #f5f9ee, #edf5e1)', padding: '60px 0' }}>
           <div className="container">
             <div className="section-header">
-              <h2 className="section-title" style={{ color: '#FF6F00' }}>⭐ العروض المميزة</h2>
-              <a href="#/products?featured=1" style={{ color: '#FF6F00', fontWeight: 700, fontSize: 14 }}>عرض الكل ←</a>
+              <h2 className="section-title" style={{ color: '#0D6E08' }}>⭐ منتجات مميزة</h2>
+              <a href="#/products?featured=1" style={{ color: '#0D6E08', fontWeight: 700, fontSize: 14 }}>عرض الكل ←</a>
             </div>
             <div className="products-grid">
               {featured.map(p => <ProductCard key={p.id} product={p} />)}
@@ -108,14 +112,14 @@ export default function HomePage() {
       </div>
 
       {/* Features */}
-      <div style={{ background: 'var(--primary)', padding: '60px 0' }}>
+      <div style={{ background: 'linear-gradient(135deg, #0D6E08, #095405)', padding: '60px 0' }}>
         <div className="container">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 30, textAlign: 'center' }}>
             {[
+              ['🌿', 'بذور معتمدة', 'جميع البذور مختبرة ومعتمدة'],
               ['🚚', 'توصيل سريع', 'توصيل لجميع المحافظات'],
-              ['🔒', 'دفع آمن', 'طرق دفع متعددة وآمنة'],
-              ['↩️', 'إرجاع سهل', 'إرجاع خلال 7 أيام'],
-              ['🛠️', 'ضمان سنة', 'ضمان على جميع المنتجات'],
+              ['📦', 'تعبئة محكمة', 'تعبئة تحافظ على حيوية البذور'],
+              ['🤝', 'دعم فني', 'إرشاد زراعي مجاني مع كل طلب'],
             ].map(([icon, title, sub]) => (
               <div key={title}>
                 <div style={{ fontSize: 42, marginBottom: 12 }}>{icon}</div>

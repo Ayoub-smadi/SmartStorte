@@ -1,11 +1,17 @@
-const ICONS = { 'تلفزيونات': '📺', 'ثلاجات': '🧊', 'غسالات': '🫧', 'مكيفات': '❄️', 'مطابخ': '🍳', 'هواتف': '📱' };
+const ICONS = {
+  'محاصيل شتوية': '❄️🌾',
+  'محاصيل صيفية': '☀️🍅',
+  'زينة صيفية': '🌻',
+  'زينة شتوية': '🌸',
+  'بذور للاستنبات (المايكروجرين)': '🌱',
+};
 
 export default function CategoryCard({ cat }) {
   return (
     <a href={`#/category/${cat.id}`}
       style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        background: '#fff', borderRadius: 'var(--radius)', padding: '20px 10px',
+        background: '#fff', borderRadius: 'var(--radius)', padding: '22px 10px',
         boxShadow: 'var(--shadow)', border: '2px solid transparent',
         transition: 'var(--transition)', cursor: 'pointer', textDecoration: 'none'
       }}
@@ -14,15 +20,15 @@ export default function CategoryCard({ cat }) {
     >
       <div style={{
         width: 64, height: 64, borderRadius: '50%',
-        background: 'linear-gradient(135deg, #e3f0ff, #c8dffe)',
+        background: 'linear-gradient(135deg, #d4edda, #a8d5a2)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 32, marginBottom: 10, transition: 'var(--transition)'
+        fontSize: 28, marginBottom: 10, transition: 'var(--transition)'
       }}>
         {cat.image ? (
           <img src={cat.image} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
-        ) : (ICONS[cat.name] || '🔌')}
+        ) : (ICONS[cat.name] || '🌿')}
       </div>
-      <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)', textAlign: 'center', marginBottom: 4 }}>{cat.name}</div>
+      <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--text)', textAlign: 'center', marginBottom: 4, lineHeight: 1.4 }}>{cat.name}</div>
       {cat.product_count !== undefined && (
         <div style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 600 }}>{cat.product_count} منتج</div>
       )}
