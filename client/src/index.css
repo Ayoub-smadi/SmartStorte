@@ -1,19 +1,19 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --primary: #6DC534;
-  --primary-dark: #5AAF29;
-  --primary-light: #7ED43F;
-  --accent: #6DC534;
-  --accent-light: #7ED43F;
+  --primary: #004729;
+  --primary-dark: #001A02;
+  --primary-light: #006635;
+  --accent: #004729;
+  --accent-light: #006635;
   --dark: #2A2A2A;
-  --bg: #F4F7F0;
+  --bg: #F2F5F3;
   --white: #FFFFFF;
   --text: #1C1C1C;
   --text-light: #555;
-  --border: #dde5d4;
-  --shadow: 0 2px 12px rgba(109,197,52,0.12);
-  --shadow-hover: 0 8px 30px rgba(109,197,52,0.22);
+  --border: #c8d9cf;
+  --shadow: 0 2px 12px rgba(0,71,41,0.12);
+  --shadow-hover: 0 8px 30px rgba(0,71,41,0.22);
   --radius: 12px;
   --transition: 0.25s ease;
 }

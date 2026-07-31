@@ -42,10 +42,10 @@ This starts both the API server (port 3001) and the Vite dev server (port 5000) 
 - Access: `/#/admin`
 
 ## Colors / Design
-- Primary Blue: #1565C0
-- Dark Blue: #0D47A1
-- Accent Orange: #FF6F00
-- Background: #F5F7FA
+- Primary Green: #004729
+- Dark Green: #001A02
+- Light Green: #006635
+- Background: #F2F5F3
 
 ## User Preferences
 - Arabic RTL interface
