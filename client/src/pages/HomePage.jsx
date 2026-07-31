@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import CategoryCard from '../components/CategoryCard.jsx';
 import ProductCard from '../components/ProductCard.jsx';
+import FarmAnimation from '../components/FarmAnimation.jsx';
 
-function FarmScene() {
+function _FarmScene_UNUSED() {
   return (
     <div style={{ width: '100%', maxWidth: 900, margin: '0 auto', padding: '0 20px' }}>
       <svg viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: 'auto', display: 'block' }}>
@@ -291,7 +292,7 @@ export default function HomePage() {
 
       {/* Farm Illustration */}
       <div style={{ background: '#f0f9f4', padding: '40px 0 10px', borderBottom: '3px solid #c8e6c9' }}>
-        <FarmScene />
+        <FarmAnimation />
         <p style={{ textAlign: 'center', color: '#004729', fontWeight: 700, fontSize: 15, paddingBottom: 20, marginTop: -10 }}>
           🌱 ابدأ رحلتك الزراعية معنا اليوم
         </p>
