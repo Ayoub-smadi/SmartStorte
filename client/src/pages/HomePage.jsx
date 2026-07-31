@@ -24,53 +24,50 @@ export default function HomePage() {
     <div>
       {/* Hero */}
       <div style={{
-        background: '#2A2A2A',
+        background: '#000000',
         padding: '80px 20px', textAlign: 'center', position: 'relative', overflow: 'hidden'
       }}>
         {/* subtle grid pattern */}
         <div style={{
-          position: 'absolute', inset: 0, opacity: 0.04,
-          backgroundImage: 'linear-gradient(rgba(109,197,52,1) 1px, transparent 1px), linear-gradient(90deg, rgba(109,197,52,1) 1px, transparent 1px)',
+          position: 'absolute', inset: 0, opacity: 0.05,
+          backgroundImage: 'linear-gradient(rgba(0,71,41,1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,71,41,1) 1px, transparent 1px)',
           backgroundSize: '40px 40px'
         }} />
         {/* Green glow */}
         <div style={{
           position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-          width: 600, height: 400, background: 'radial-gradient(ellipse, rgba(109,197,52,0.12) 0%, transparent 70%)',
+          width: 600, height: 400, background: 'radial-gradient(ellipse, rgba(0,71,41,0.18) 0%, transparent 70%)',
           pointerEvents: 'none'
         }} />
 
         <div style={{ position: 'relative', maxWidth: 720, margin: '0 auto' }}>
           {/* Logo badge */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 28 }}>
-            <svg width="52" height="52" viewBox="0 0 42 42" fill="none">
-              <circle cx="21" cy="21" r="20" stroke="#6DC534" strokeWidth="2.5" fill="rgba(109,197,52,0.1)"/>
-              <polygon points="23,7 14,23 21,23 19,35 28,19 21,19" fill="#6DC534"/>
-            </svg>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginBottom: 28 }}>
+            <img src="/logo.png" alt="logo" style={{ width: 64, height: 64, objectFit: 'contain' }} />
             <div style={{ textAlign: 'right' }}>
               <div style={{ color: '#fff', fontWeight: 900, fontSize: 22, lineHeight: 1 }}>بذور زراعية</div>
-              <div style={{ color: '#6DC534', fontSize: 13, fontWeight: 700 }}>للمحترفين</div>
+              <div style={{ color: '#5aba87', fontSize: 13, fontWeight: 700 }}>للمحترفين</div>
             </div>
           </div>
 
           <h1 style={{ color: '#fff', fontSize: 'clamp(26px, 5vw, 50px)', fontWeight: 900, marginBottom: 20, lineHeight: 1.2 }}>
             أجود البذور الزراعية<br/>
-            <span style={{ color: '#6DC534' }}>لكل موسم وكل محصول</span>
+            <span style={{ color: '#5aba87' }}>لكل موسم وكل محصول</span>
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 17, marginBottom: 38, lineHeight: 1.8 }}>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 17, marginBottom: 38, lineHeight: 1.8 }}>
             محاصيل شتوية وصيفية، نباتات زينة، ومايكروجرين — بذور مختارة بعناية للمزارع المحترف
           </p>
 
           <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
             <a href="#/products" style={{
-              background: '#6DC534', color: '#1C1C1C', fontWeight: 800,
+              background: '#004729', color: '#fff', fontWeight: 800,
               padding: '13px 36px', borderRadius: 8, fontSize: 16,
               display: 'inline-flex', alignItems: 'center', gap: 8,
-              boxShadow: '0 4px 18px rgba(109,197,52,0.4)', transition: '0.2s'
+              boxShadow: '0 4px 18px rgba(0,71,41,0.5)', transition: '0.2s'
             }}>🛒 تسوق الآن</a>
             <a href="#/products?featured=1" style={{
-              background: 'transparent', color: '#6DC534',
-              border: '2px solid #6DC534', fontWeight: 700,
+              background: 'transparent', color: '#5aba87',
+              border: '2px solid #004729', fontWeight: 700,
               padding: '13px 32px', borderRadius: 8, fontSize: 16,
               display: 'inline-flex', alignItems: 'center', gap: 8
             }}>⭐ العروض المميزة</a>
@@ -81,8 +78,8 @@ export default function HomePage() {
         <div style={{ display: 'flex', justifyContent: 'center', gap: 52, marginTop: 60, flexWrap: 'wrap' }}>
           {[['100+','صنف من البذور'],['5','أقسام رئيسية'],['توصيل','سريع'],['جودة','مضمونة']].map(([val,label]) => (
             <div key={label} style={{ textAlign: 'center' }}>
-              <div style={{ color: '#6DC534', fontSize: 26, fontWeight: 900 }}>{val}</div>
-              <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>{label}</div>
+              <div style={{ color: '#5aba87', fontSize: 26, fontWeight: 900 }}>{val}</div>
+              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>{label}</div>
             </div>
           ))}
         </div>
@@ -103,11 +100,11 @@ export default function HomePage() {
 
       {/* Featured */}
       {featured.length > 0 && (
-        <div style={{ background: '#2A2A2A', padding: '60px 0' }}>
+        <div style={{ background: '#000000', padding: '60px 0', borderTop: '1px solid #001A02', borderBottom: '1px solid #001A02' }}>
           <div className="container">
             <div className="section-header">
-              <h2 className="section-title" style={{ color: '#6DC534' }}>⭐ منتجات مميزة</h2>
-              <a href="#/products?featured=1" style={{ color: '#6DC534', fontWeight: 700, fontSize: 14 }}>عرض الكل ←</a>
+              <h2 className="section-title" style={{ color: '#5aba87' }}>⭐ منتجات مميزة</h2>
+              <a href="#/products?featured=1" style={{ color: '#5aba87', fontWeight: 700, fontSize: 14 }}>عرض الكل ←</a>
             </div>
             <div className="products-grid">
               {featured.map(p => <ProductCard key={p.id} product={p} />)}
@@ -130,7 +127,7 @@ export default function HomePage() {
       </div>
 
       {/* Features */}
-      <div style={{ background: '#2A2A2A', padding: '60px 0' }}>
+      <div style={{ background: '#000000', padding: '60px 0', borderTop: '1px solid #001A02' }}>
         <div className="container">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 30, textAlign: 'center' }}>
             {[
@@ -141,8 +138,8 @@ export default function HomePage() {
             ].map(([icon,title,sub]) => (
               <div key={title}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>{icon}</div>
-                <div style={{ color: '#6DC534', fontWeight: 700, fontSize: 16, marginBottom: 6 }}>{title}</div>
-                <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>{sub}</div>
+                <div style={{ color: '#5aba87', fontWeight: 700, fontSize: 16, marginBottom: 6 }}>{title}</div>
+                <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>{sub}</div>
               </div>
             ))}
           </div>
