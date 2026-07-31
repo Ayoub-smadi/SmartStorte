@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useApp } from '../App.jsx';
 
 export default function ProductDetailPage({ id }) {
-  const { navigate } = useApp();
+  const { navigate, addToCart } = useApp();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [qty, setQty] = useState(1);
 
   useEffect(() => {
     fetch(`/api/products/${id}`).then(r => {
@@ -99,12 +100,26 @@ export default function ProductDetailPage({ id }) {
             </div>
           )}
 
+          {/* Quantity selector */}
+          {product.stock > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-light)' }}>الكمية:</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f5f7f5', borderRadius: 10, padding: '6px 12px' }}>
+                <button onClick={() => setQty(q => Math.max(1, q - 1))}
+                  style={{ width: 30, height: 30, borderRadius: 7, border: 'none', background: '#e0e0e0', fontWeight: 900, fontSize: 18, cursor: 'pointer', lineHeight: 1 }}>−</button>
+                <span style={{ fontWeight: 800, fontSize: 18, minWidth: 32, textAlign: 'center' }}>{qty}</span>
+                <button onClick={() => setQty(q => Math.min(product.stock, q + 1))}
+                  style={{ width: 30, height: 30, borderRadius: 7, border: 'none', background: '#004729', color: '#fff', fontWeight: 900, fontSize: 18, cursor: 'pointer', lineHeight: 1 }}>+</button>
+              </div>
+            </div>
+          )}
+
           {/* Actions */}
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <button className="btn btn-accent" style={{ flex: 1, justifyContent: 'center', padding: '14px', fontSize: 16 }}
+            <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center', padding: '14px', fontSize: 16 }}
               disabled={product.stock === 0}
-              onClick={() => alert('يمكنك التواصل معنا عبر الهاتف للطلب: 07700000000')}>
-              {product.stock > 0 ? '📞 اطلب الآن' : 'نفذت الكمية'}
+              onClick={() => { if (product.stock > 0) { addToCart(product, qty); navigate('#/cart'); } }}>
+              {product.stock > 0 ? '🛒 أضف للسلة' : 'نفذت الكمية'}
             </button>
             <button className="btn btn-outline" onClick={() => navigate('#/products')} style={{ padding: '14px 20px' }}>
               ← العودة

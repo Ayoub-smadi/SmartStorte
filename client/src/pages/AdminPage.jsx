@@ -61,34 +61,27 @@ function ProductForm({ initial, categories, onSave, onClose }) {
         <div className="form-group">
           <label className="form-label">القسم</label>
           <select className="form-select" value={form.category_id} onChange={e => setForm(f => ({ ...f, category_id: e.target.value }))}>
-            <option value="">-- اختر القسم --</option>
+            <option value="">بدون قسم</option>
             {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
         <div className="form-group">
-          <label className="form-label">الكمية في المخزن</label>
+          <label className="form-label">المخزون</label>
           <input className="form-input" type="number" value={form.stock} onChange={e => setForm(f => ({ ...f, stock: e.target.value }))} min="0" />
         </div>
       </div>
-      <div className="form-row">
-        <div className="form-group">
-          <label className="form-label">منتج مميز</label>
-          <select className="form-select" value={form.featured} onChange={e => setForm(f => ({ ...f, featured: e.target.value }))}>
-            <option value="0">لا</option>
-            <option value="1">نعم ⭐</option>
-          </select>
-        </div>
-        <div className="form-group">
-          <label className="form-label">صورة المنتج</label>
-          <input type="file" accept="image/*" onChange={e => setImage(e.target.files[0])}
-            style={{ padding: 6, border: '1.5px solid var(--border)', borderRadius: 8, width: '100%', fontSize: 13 }} />
-        </div>
+      <div className="form-group">
+        <label className="form-label">مميز</label>
+        <select className="form-select" value={form.featured} onChange={e => setForm(f => ({ ...f, featured: e.target.value }))}>
+          <option value="0">لا</option>
+          <option value="1">نعم ⭐</option>
+        </select>
       </div>
-      {initial?.image && !image && (
-        <div style={{ marginBottom: 14 }}>
-          <img src={initial.image} alt="" style={{ width: 80, height: 60, objectFit: 'cover', borderRadius: 8 }} />
-        </div>
-      )}
+      <div className="form-group">
+        <label className="form-label">صورة المنتج</label>
+        <input type="file" accept="image/*" onChange={e => setImage(e.target.files[0])}
+          style={{ fontFamily: 'Cairo,sans-serif', fontSize: 14, width: '100%' }} />
+      </div>
       <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 8 }}>
         <button type="button" onClick={onClose} className="btn btn-outline">إلغاء</button>
         <button type="submit" className="btn btn-primary" disabled={loading}>
@@ -107,8 +100,7 @@ function CategoryForm({ initial, onSave, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault(); setLoading(true);
     const fd = new FormData();
-    fd.append('name', form.name);
-    fd.append('description', form.description);
+    Object.entries(form).forEach(([k, v]) => fd.append(k, v));
     if (image) fd.append('image', image);
     const url = initial ? `/api/categories/${initial.id}` : '/api/categories';
     const method = initial ? 'PUT' : 'POST';
@@ -130,11 +122,8 @@ function CategoryForm({ initial, onSave, onClose }) {
       <div className="form-group">
         <label className="form-label">صورة القسم</label>
         <input type="file" accept="image/*" onChange={e => setImage(e.target.files[0])}
-          style={{ padding: 6, border: '1.5px solid var(--border)', borderRadius: 8, width: '100%', fontSize: 13 }} />
+          style={{ fontFamily: 'Cairo,sans-serif', fontSize: 14, width: '100%' }} />
       </div>
-      {initial?.image && !image && (
-        <img src={initial.image} alt="" style={{ width: 80, height: 60, objectFit: 'cover', borderRadius: 8, marginBottom: 14 }} />
-      )}
       <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 8 }}>
         <button type="button" onClick={onClose} className="btn btn-outline">إلغاء</button>
         <button type="submit" className="btn btn-primary" disabled={loading}>
@@ -145,34 +134,58 @@ function CategoryForm({ initial, onSave, onClose }) {
   );
 }
 
+const STATUS_MAP = {
+  pending:   { label: 'قيد المعالجة', color: '#FF6F00', bg: '#FFF3E0' },
+  confirmed: { label: 'مؤكد',         color: '#1565C0', bg: '#E3F0FF' },
+  delivered: { label: 'تم التوصيل',   color: '#2E7D32', bg: '#E8F5E9' },
+  cancelled: { label: 'ملغي',         color: '#C62828', bg: '#FCE4E4' },
+};
+
 export default function AdminPage() {
   const { toast } = useApp();
   const [tab, setTab] = useState('products');
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState(null); // { type: 'add-product' | 'edit-product' | 'add-cat' | 'edit-cat', data? }
-  const [deleteConfirm, setDeleteConfirm] = useState(null); // { type, id, name }
+  const [modal, setModal] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [search, setSearch] = useState('');
+  const [expandedOrder, setExpandedOrder] = useState(null);
 
   const loadAll = async () => {
     setLoading(true);
-    const [p, c] = await Promise.all([
+    const [p, c, o] = await Promise.all([
       fetch('/api/products?limit=200', { credentials: 'include' }).then(r => r.json()),
       fetch('/api/categories', { credentials: 'include' }).then(r => r.json()),
+      fetch('/api/orders', { credentials: 'include' }).then(r => r.json()),
     ]);
-    setProducts(p); setCategories(c); setLoading(false);
+    setProducts(p); setCategories(c); setOrders(Array.isArray(o) ? o : []); setLoading(false);
   };
 
   useEffect(() => { loadAll(); }, []);
 
   const handleDelete = async () => {
     if (!deleteConfirm) return;
-    const url = deleteConfirm.type === 'product' ? `/api/products/${deleteConfirm.id}` : `/api/categories/${deleteConfirm.id}`;
+    const url = deleteConfirm.type === 'product'
+      ? `/api/products/${deleteConfirm.id}`
+      : deleteConfirm.type === 'order'
+      ? `/api/orders/${deleteConfirm.id}`
+      : `/api/categories/${deleteConfirm.id}`;
     const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
     if (res.ok) { toast('تم الحذف بنجاح', 'success'); loadAll(); }
     else toast('فشل الحذف', 'error');
     setDeleteConfirm(null);
+  };
+
+  const updateOrderStatus = async (id, status) => {
+    const res = await fetch(`/api/orders/${id}`, {
+      method: 'PUT', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    if (res.ok) { toast('تم تحديث حالة الطلب'); loadAll(); }
+    else toast('فشل التحديث', 'error');
   };
 
   const filteredProducts = products.filter(p =>
@@ -189,26 +202,29 @@ export default function AdminPage() {
     transition: '0.2s',
   });
 
+  const pendingOrders = orders.filter(o => o.status === 'pending').length;
+
   return (
     <div>
       {/* Admin Header */}
-      <div style={{ background: '#2A2A2A', padding: '28px 0 0' }}>
+      <div style={{ background: '#004729', padding: '28px 0 0' }}>
         <div className="container" style={{ padding: '0 20px' }}>
           <h1 style={{ color: '#fff', fontSize: 26, fontWeight: 800, marginBottom: 20 }}>
             ⚙️ لوحة التحكم
           </h1>
           {/* Stats Row */}
-          <div style={{ display: 'flex', gap: 20, marginBottom: 20, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
             {[
               { label: 'إجمالي المنتجات', value: products.length, icon: '📦', color: '#fff' },
               { label: 'الأقسام', value: categories.length, icon: '📂', color: '#fff' },
               { label: 'مميز', value: products.filter(p => p.featured).length, icon: '⭐', color: '#FFD700' },
-              { label: 'نفذ المخزون', value: products.filter(p => p.stock === 0).length, icon: '⚠️', color: '#FF6F00' },
+              { label: 'طلبات جديدة', value: pendingOrders, icon: '🛒', color: pendingOrders > 0 ? '#FFD700' : '#fff' },
+              { label: 'إجمالي الطلبات', value: orders.length, icon: '📋', color: '#fff' },
             ].map(s => (
-              <div key={s.label} style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 12, padding: '16px 24px', minWidth: 140, flex: 1 }}>
-                <div style={{ fontSize: 26 }}>{s.icon}</div>
+              <div key={s.label} style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 12, padding: '14px 20px', minWidth: 130, flex: 1 }}>
+                <div style={{ fontSize: 24 }}>{s.icon}</div>
                 <div style={{ color: s.color, fontWeight: 900, fontSize: 24 }}>{s.value}</div>
-                <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13 }}>{s.label}</div>
+                <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12 }}>{s.label}</div>
               </div>
             ))}
           </div>
@@ -216,13 +232,24 @@ export default function AdminPage() {
           <div style={{ display: 'flex', gap: 4 }}>
             <button onClick={() => setTab('products')} style={tabStyle('products')}>📦 المنتجات</button>
             <button onClick={() => setTab('categories')} style={tabStyle('categories')}>📂 الأقسام</button>
+            <button onClick={() => setTab('orders')} style={{ ...tabStyle('orders'), position: 'relative' }}>
+              📋 الطلبات
+              {pendingOrders > 0 && (
+                <span style={{
+                  position: 'absolute', top: 6, right: 6,
+                  background: '#FFD700', color: '#004729', borderRadius: '50%',
+                  width: 18, height: 18, fontSize: 11, fontWeight: 900,
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                }}>{pendingOrders}</span>
+              )}
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Content */}
+      {/* Toolbar */}
       <div style={{ background: '#fff', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', marginBottom: 24 }}>
-        <div className="container" style={{ padding: '24px 20px' }}>
+        <div className="container" style={{ padding: '20px 20px' }}>
           <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
             {tab === 'products' ? (
               <>
@@ -232,10 +259,14 @@ export default function AdminPage() {
                   + إضافة منتج
                 </button>
               </>
-            ) : (
+            ) : tab === 'categories' ? (
               <button onClick={() => setModal({ type: 'add-cat' })} className="btn btn-accent">
                 + إضافة قسم
               </button>
+            ) : (
+              <div style={{ color: 'var(--text-light)', fontSize: 14 }}>
+                إجمالي الطلبات: <strong>{orders.length}</strong> — قيد المعالجة: <strong style={{ color: '#FF6F00' }}>{pendingOrders}</strong>
+              </div>
             )}
           </div>
         </div>
@@ -244,7 +275,7 @@ export default function AdminPage() {
       <div className="container" style={{ padding: '0 20px 48px' }}>
         {loading ? <div className="spinner" /> : (
           <>
-            {/* Products Tab */}
+            {/* ── Products Tab ── */}
             {tab === 'products' && (
               <div style={{ background: '#fff', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow)', overflow: 'hidden', border: '1px solid var(--border)' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
@@ -275,7 +306,7 @@ export default function AdminPage() {
                           </div>
                         </td>
                         <td style={{ padding: '12px 16px' }}>
-                          <span style={{ background: '#e3f0ff', color: 'var(--primary)', padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600 }}>
+                          <span style={{ background: '#e8f5e9', color: 'var(--primary)', padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600 }}>
                             {p.category_name || '—'}
                           </span>
                         </td>
@@ -285,19 +316,13 @@ export default function AdminPage() {
                         <td style={{ padding: '12px 16px' }}>
                           <span className={`badge ${p.stock > 0 ? 'badge-success' : 'badge-danger'}`}>{p.stock}</span>
                         </td>
-                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                          {p.featured ? '⭐' : '—'}
-                        </td>
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>{p.featured ? '⭐' : '—'}</td>
                         <td style={{ padding: '12px 16px' }}>
                           <div style={{ display: 'flex', gap: 6 }}>
                             <button onClick={() => setModal({ type: 'edit-product', data: p })}
-                              style={{ background: '#e3f0ff', color: 'var(--primary)', border: 'none', padding: '6px 14px', borderRadius: 7, cursor: 'pointer', fontFamily: 'Cairo,sans-serif', fontWeight: 600, fontSize: 13 }}>
-                              ✏️ تعديل
-                            </button>
+                              style={{ background: '#e8f5e9', color: 'var(--primary)', border: 'none', padding: '6px 14px', borderRadius: 7, cursor: 'pointer', fontFamily: 'Cairo,sans-serif', fontWeight: 600, fontSize: 13 }}>✏️ تعديل</button>
                             <button onClick={() => setDeleteConfirm({ type: 'product', id: p.id, name: p.name })}
-                              style={{ background: '#fce4e4', color: '#c62828', border: 'none', padding: '6px 14px', borderRadius: 7, cursor: 'pointer', fontFamily: 'Cairo,sans-serif', fontWeight: 600, fontSize: 13 }}>
-                              🗑️ حذف
-                            </button>
+                              style={{ background: '#fce4e4', color: '#c62828', border: 'none', padding: '6px 14px', borderRadius: 7, cursor: 'pointer', fontFamily: 'Cairo,sans-serif', fontWeight: 600, fontSize: 13 }}>🗑️ حذف</button>
                           </div>
                         </td>
                       </tr>
@@ -307,12 +332,12 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* Categories Tab */}
+            {/* ── Categories Tab ── */}
             {tab === 'categories' && (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
                 {categories.map(cat => (
                   <div key={cat.id} style={{ background: '#fff', borderRadius: 'var(--radius)', padding: 20, boxShadow: 'var(--shadow)', border: '1px solid var(--border)', display: 'flex', gap: 14, alignItems: 'center' }}>
-                    <div style={{ width: 60, height: 60, borderRadius: 12, overflow: 'hidden', background: 'linear-gradient(135deg, #e3f0ff, #c8dffe)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, flexShrink: 0 }}>
+                    <div style={{ width: 60, height: 60, borderRadius: 12, overflow: 'hidden', background: '#e8f5e9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, flexShrink: 0 }}>
                       {cat.image ? <img src={cat.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : '📂'}
                     </div>
                     <div style={{ flex: 1 }}>
@@ -320,17 +345,105 @@ export default function AdminPage() {
                       <div style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 600, marginBottom: 8 }}>{cat.product_count} منتج</div>
                       <div style={{ display: 'flex', gap: 8 }}>
                         <button onClick={() => setModal({ type: 'edit-cat', data: cat })}
-                          style={{ background: '#e3f0ff', color: 'var(--primary)', border: 'none', padding: '5px 12px', borderRadius: 7, cursor: 'pointer', fontFamily: 'Cairo,sans-serif', fontWeight: 600, fontSize: 12 }}>
-                          ✏️ تعديل
-                        </button>
+                          style={{ background: '#e8f5e9', color: 'var(--primary)', border: 'none', padding: '5px 12px', borderRadius: 7, cursor: 'pointer', fontFamily: 'Cairo,sans-serif', fontWeight: 600, fontSize: 12 }}>✏️ تعديل</button>
                         <button onClick={() => setDeleteConfirm({ type: 'category', id: cat.id, name: cat.name })}
-                          style={{ background: '#fce4e4', color: '#c62828', border: 'none', padding: '5px 12px', borderRadius: 7, cursor: 'pointer', fontFamily: 'Cairo,sans-serif', fontWeight: 600, fontSize: 12 }}>
-                          🗑️ حذف
-                        </button>
+                          style={{ background: '#fce4e4', color: '#c62828', border: 'none', padding: '5px 12px', borderRadius: 7, cursor: 'pointer', fontFamily: 'Cairo,sans-serif', fontWeight: 600, fontSize: 12 }}>🗑️ حذف</button>
                       </div>
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* ── Orders Tab ── */}
+            {tab === 'orders' && (
+              <div>
+                {orders.length === 0 ? (
+                  <div className="empty">
+                    <div className="empty-icon">📋</div>
+                    <h3>لا توجد طلبات بعد</h3>
+                    <p style={{ color: 'var(--text-light)', marginTop: 8 }}>ستظهر هنا الطلبات عند وصولها</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    {orders.map(order => {
+                      const s = STATUS_MAP[order.status] || STATUS_MAP.pending;
+                      const isExpanded = expandedOrder === order.id;
+                      return (
+                        <div key={order.id} style={{ background: '#fff', borderRadius: 14, boxShadow: 'var(--shadow)', border: '1px solid var(--border)', overflow: 'hidden' }}>
+                          {/* Order header */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 22px', flexWrap: 'wrap', cursor: 'pointer' }}
+                            onClick={() => setExpandedOrder(isExpanded ? null : order.id)}>
+                            <div style={{ background: '#f0f9f4', borderRadius: 10, padding: '8px 14px', minWidth: 60, textAlign: 'center' }}>
+                              <div style={{ fontWeight: 900, fontSize: 18, color: '#004729' }}>#{order.id}</div>
+                            </div>
+                            <div style={{ flex: 1, minWidth: 180 }}>
+                              <div style={{ fontWeight: 700, fontSize: 15 }}>{order.customer_name}</div>
+                              <div style={{ color: '#888', fontSize: 13 }}>📞 {order.customer_phone}</div>
+                            </div>
+                            <div style={{ textAlign: 'center', minWidth: 100 }}>
+                              <div style={{ fontWeight: 900, fontSize: 16, color: '#004729' }}>{Number(order.total).toLocaleString()}</div>
+                              <div style={{ fontSize: 12, color: '#aaa' }}>دينار عراقي</div>
+                            </div>
+                            <div style={{ minWidth: 120 }}>
+                              <span style={{ background: s.bg, color: s.color, padding: '5px 14px', borderRadius: 20, fontWeight: 700, fontSize: 13 }}>
+                                {s.label}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: 12, color: '#aaa', minWidth: 130 }}>
+                              {new Date(order.created_at).toLocaleDateString('ar-IQ', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                            <div style={{ color: '#aaa', fontSize: 18 }}>{isExpanded ? '▲' : '▼'}</div>
+                          </div>
+
+                          {/* Expanded details */}
+                          {isExpanded && (
+                            <div style={{ borderTop: '1px solid var(--border)', padding: '18px 22px', background: '#fafafa' }}>
+                              {/* Items */}
+                              <div style={{ marginBottom: 16 }}>
+                                <div style={{ fontWeight: 700, marginBottom: 10, fontSize: 14 }}>🧾 تفاصيل الطلب</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                  {(order.items || []).map((item, i) => (
+                                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', background: '#fff', padding: '10px 14px', borderRadius: 8, border: '1px solid #eee', fontSize: 14 }}>
+                                      <span>{item.name} × {item.qty}</span>
+                                      <span style={{ fontWeight: 700, color: '#004729' }}>{(item.price * item.qty).toLocaleString()} د.ع</span>
+                                    </div>
+                                  ))}
+                                </div>
+                                {order.notes && (
+                                  <div style={{ marginTop: 10, background: '#fff8e1', padding: '10px 14px', borderRadius: 8, fontSize: 13, color: '#666', border: '1px solid #ffe082' }}>
+                                    📝 ملاحظة: {order.notes}
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Actions */}
+                              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                                <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text)' }}>تغيير الحالة:</span>
+                                {Object.entries(STATUS_MAP).map(([key, val]) => (
+                                  <button key={key} onClick={() => updateOrderStatus(order.id, key)}
+                                    style={{
+                                      background: order.status === key ? val.color : val.bg,
+                                      color: order.status === key ? '#fff' : val.color,
+                                      border: `1.5px solid ${val.color}`,
+                                      padding: '6px 14px', borderRadius: 8, cursor: 'pointer',
+                                      fontFamily: 'Cairo,sans-serif', fontWeight: 700, fontSize: 13,
+                                    }}>
+                                    {val.label}
+                                  </button>
+                                ))}
+                                <button onClick={() => setDeleteConfirm({ type: 'order', id: order.id, name: `طلب #${order.id}` })}
+                                  style={{ marginRight: 'auto', background: '#fce4e4', color: '#c62828', border: 'none', padding: '6px 14px', borderRadius: 8, cursor: 'pointer', fontFamily: 'Cairo,sans-serif', fontWeight: 600, fontSize: 13 }}>
+                                  🗑️ حذف
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </>
