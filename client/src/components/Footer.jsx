@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer style={{ background: '#000000', color: '#fff', marginTop: 60, borderTop: '1px solid #004729' }}>
+    <footer style={{ background: '#004729', color: '#fff', marginTop: 60, borderTop: '1px solid #003320' }}>
       <div className="container" style={{ padding: '48px 20px 24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 40, marginBottom: 40 }}>
 

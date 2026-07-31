@@ -24,7 +24,7 @@ export default function HomePage() {
     <div>
       {/* Hero */}
       <div style={{
-        background: '#000000',
+        background: '#ffffff',
         padding: '80px 20px', textAlign: 'center', position: 'relative', overflow: 'hidden'
       }}>
         {/* subtle grid pattern */}
@@ -50,11 +50,11 @@ export default function HomePage() {
             </div>
           </div>
 
-          <h1 style={{ color: '#fff', fontSize: 'clamp(26px, 5vw, 50px)', fontWeight: 900, marginBottom: 20, lineHeight: 1.2 }}>
+          <h1 style={{ color: '#1a1a1a', fontSize: 'clamp(26px, 5vw, 50px)', fontWeight: 900, marginBottom: 20, lineHeight: 1.2 }}>
             أجود البذور الزراعية<br/>
             <span style={{ color: '#5aba87' }}>لكل موسم وكل محصول</span>
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 17, marginBottom: 38, lineHeight: 1.8 }}>
+          <p style={{ color: 'rgba(0,0,0,0.55)', fontSize: 17, marginBottom: 38, lineHeight: 1.8 }}>
             محاصيل شتوية وصيفية، نباتات زينة، ومايكروجرين — بذور مختارة بعناية للمزارع المحترف
           </p>
 
@@ -79,7 +79,7 @@ export default function HomePage() {
           {[['100+','صنف من البذور'],['5','أقسام رئيسية'],['توصيل','سريع'],['جودة','مضمونة']].map(([val,label]) => (
             <div key={label} style={{ textAlign: 'center' }}>
               <div style={{ color: '#5aba87', fontSize: 26, fontWeight: 900 }}>{val}</div>
-              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>{label}</div>
+              <div style={{ color: 'rgba(0,0,0,0.5)', fontSize: 13 }}>{label}</div>
             </div>
           ))}
         </div>
@@ -100,7 +100,7 @@ export default function HomePage() {
 
       {/* Featured */}
       {featured.length > 0 && (
-        <div style={{ background: '#000000', padding: '60px 0', borderTop: '1px solid #001A02', borderBottom: '1px solid #001A02' }}>
+        <div style={{ background: '#004729', padding: '60px 0' }}>
           <div className="container">
             <div className="section-header">
               <h2 className="section-title" style={{ color: '#5aba87' }}>⭐ منتجات مميزة</h2>
@@ -127,7 +127,7 @@ export default function HomePage() {
       </div>
 
       {/* Features */}
-      <div style={{ background: '#000000', padding: '60px 0', borderTop: '1px solid #001A02' }}>
+      <div style={{ background: '#004729', padding: '60px 0' }}>
         <div className="container">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 30, textAlign: 'center' }}>
             {[

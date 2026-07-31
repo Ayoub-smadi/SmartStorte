@@ -22,10 +22,10 @@ export default function Navbar() {
 
   return (
     <header style={{
-      background: '#000000',
+      background: '#ffffff',
       position: 'sticky', top: 0, zIndex: 100,
-      boxShadow: '0 2px 18px rgba(0,71,41,0.4)',
-      borderBottom: '1px solid #004729'
+      boxShadow: '0 2px 18px rgba(0,71,41,0.15)',
+      borderBottom: '1px solid #c8d9cf'
     }}>
       <div className="container" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '0 20px', height: 68 }}>
 
@@ -33,7 +33,7 @@ export default function Navbar() {
         <a href="#/" style={{ display: 'flex', alignItems: 'center', gap: 11, flexShrink: 0, textDecoration: 'none' }}>
           <img src="/logo.png" alt="logo" style={{ width: 44, height: 44, objectFit: 'contain' }} />
           <div>
-            <div style={{ color: '#fff', fontWeight: 900, fontSize: 17, letterSpacing: 1, lineHeight: 1.1 }}>بذور زراعية</div>
+            <div style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 17, letterSpacing: 1, lineHeight: 1.1 }}>بذور زراعية</div>
             <div style={{ color: '#004729', fontSize: 11, fontWeight: 600, letterSpacing: 0.5 }}>للمحترفين</div>
           </div>
         </a>
@@ -49,7 +49,7 @@ export default function Navbar() {
               border: '1px solid rgba(0,71,41,0.5)',
               borderRadius: '8px 0 0 8px',
               fontFamily: 'Cairo, sans-serif', fontSize: 14,
-              outline: 'none', background: '#111', color: '#fff',
+              outline: 'none', background: '#f5f5f5', color: '#1a1a1a',
             }}
           />
           <button type="submit" style={{
@@ -63,11 +63,11 @@ export default function Navbar() {
         <nav style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
           {[['الرئيسية','#/'],['المنتجات','#/products']].map(([label, href]) => (
             <a key={href} href={href} style={{
-              color: 'rgba(255,255,255,0.85)', fontWeight: 600,
+              color: 'rgba(0,0,0,0.75)', fontWeight: 600,
               padding: '7px 13px', borderRadius: 8, fontSize: 14, transition: '0.2s'
             }}
-              onMouseOver={e => { e.currentTarget.style.background='rgba(0,71,41,0.25)'; e.currentTarget.style.color='#5aba87'; }}
-              onMouseOut={e => { e.currentTarget.style.background='transparent'; e.currentTarget.style.color='rgba(255,255,255,0.85)'; }}>
+              onMouseOver={e => { e.currentTarget.style.background='rgba(0,71,41,0.1)'; e.currentTarget.style.color='#004729'; }}
+              onMouseOut={e => { e.currentTarget.style.background='transparent'; e.currentTarget.style.color='rgba(0,0,0,0.75)'; }}>
               {label}
             </a>
           ))}
@@ -80,7 +80,7 @@ export default function Navbar() {
           )}
           {user ? (
             <button onClick={logout} style={{
-              background: 'rgba(255,255,255,0.08)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)',
+              background: 'rgba(0,0,0,0.06)', color: '#333', border: '1px solid rgba(0,0,0,0.15)',
               padding: '7px 14px', borderRadius: 8, cursor: 'pointer',
               fontFamily: 'Cairo,sans-serif', fontWeight: 600, fontSize: 14
             }}>خروج</button>
