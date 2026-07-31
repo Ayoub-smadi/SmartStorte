@@ -33,8 +33,7 @@ export default function Navbar() {
         <a href="#/" style={{ display: 'flex', alignItems: 'center', gap: 11, flexShrink: 0, textDecoration: 'none' }}>
           <img src="/logo.png" alt="logo" style={{ width: 44, height: 44, objectFit: 'contain' }} />
           <div>
-            <div style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 17, letterSpacing: 1, lineHeight: 1.1 }}>بذور زراعية</div>
-            <div style={{ color: '#004729', fontSize: 11, fontWeight: 600, letterSpacing: 0.5 }}>للمحترفين</div>
+            <div style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 20, letterSpacing: 1, lineHeight: 1.1 }}>بذور</div>
           </div>
         </a>
 

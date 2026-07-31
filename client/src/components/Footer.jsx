@@ -9,8 +9,7 @@ export default function Footer() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <img src="/logo.png" alt="logo" style={{ width: 42, height: 42, objectFit: 'contain' }} />
               <div>
-                <div style={{ fontWeight: 900, fontSize: 17 }}>بذور زراعية</div>
-                <div style={{ fontSize: 11, color: '#5aba87', fontWeight: 600 }}>للمحترفين</div>
+                <div style={{ fontWeight: 900, fontSize: 20 }}>بذور</div>
               </div>
             </div>
             <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 14, lineHeight: 1.8 }}>
@@ -42,7 +41,7 @@ export default function Footer() {
         </div>
 
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 20, textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
-          © 2024 بذور زراعية للمحترفين — جميع الحقوق محفوظة
+          © 2024 بذور — جميع الحقوق محفوظة
         </div>
       </div>
     </footer>
