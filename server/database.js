@@ -67,7 +67,7 @@ db.exec(`
 ['email TEXT'].forEach(col => {
   try { db.exec(`ALTER TABLE users ADD COLUMN ${col}`); } catch(e) {}
 });
-['user_id INTEGER REFERENCES users(id) ON DELETE SET NULL', 'customer_email TEXT'].forEach(col => {
+['user_id INTEGER REFERENCES users(id) ON DELETE SET NULL', 'customer_email TEXT', 'shipping_fee REAL DEFAULT 0', 'governorate TEXT'].forEach(col => {
   try { db.exec(`ALTER TABLE orders ADD COLUMN ${col}`); } catch(e) {}
 });
 

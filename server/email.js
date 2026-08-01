@@ -16,14 +16,21 @@ function createTransporter(s) {
   });
 }
 
-export async function sendOrderConfirmation({ to, orderId, items, total, storeName }) {
+export async function sendOrderConfirmation({ to, orderId, items, total, shippingFee, governorate, storeName }) {
   const s = getSettings();
   const transporter = createTransporter(s);
   if (!transporter || !to) return;
   const name = storeName || s.store_name || 'بذور';
+  const fee = Number(shippingFee) || 0;
+  const subtotal = Number(total) - fee;
   const itemsHtml = (items || []).map(i =>
     `<tr><td style="padding:6px 12px;border-bottom:1px solid #eee">${i.name}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:center">${i.qty}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:left">${(i.price*i.qty).toLocaleString()} د.ع</td></tr>`
   ).join('');
+  const shippingRow = fee > 0 ? `
+    <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:14px;color:#555">
+      <span>🚚 رسوم التوصيل${governorate ? ` (${governorate})` : ''}</span>
+      <span>${fee.toLocaleString()} د.ع</span>
+    </div>` : '';
   try {
     await transporter.sendMail({
       from: s.smtp_from || s.smtp_user,
@@ -41,8 +48,13 @@ export async function sendOrderConfirmation({ to, orderId, items, total, storeNa
               <thead><tr style="background:#f5f7f5"><th style="padding:8px 12px;text-align:right">المنتج</th><th style="padding:8px 12px;text-align:center">الكمية</th><th style="padding:8px 12px;text-align:left">السعر</th></tr></thead>
               <tbody>${itemsHtml}</tbody>
             </table>
-            <div style="background:#f0f9f4;border-radius:8px;padding:14px 18px;text-align:center;font-size:16px;font-weight:bold;color:#004729">
-              المجموع: ${Number(total).toLocaleString()} د.ع
+            <div style="border-top:2px solid #e0e0e0;padding-top:14px;margin-top:4px">
+              ${fee > 0 ? `<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:14px;color:#555"><span>المجموع الفرعي</span><span>${subtotal.toLocaleString()} د.ع</span></div>` : ''}
+              ${shippingRow}
+              <div style="background:#f0f9f4;border-radius:8px;padding:14px 18px;margin-top:10px;display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:15px;font-weight:bold;color:#004729">الإجمالي</span>
+                <span style="font-size:18px;font-weight:900;color:#004729">${Number(total).toLocaleString()} د.ع</span>
+              </div>
             </div>
           </div>
           <div style="background:#f5f7f5;padding:16px 32px;text-align:center;color:#888;font-size:13px">${name}</div>

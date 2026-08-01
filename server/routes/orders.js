@@ -11,7 +11,7 @@ router.post('/', async (req, res) => {
     return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً لإتمام الطلب' });
   }
 
-  const { customer_name, customer_phone, customer_email, items, total, notes } = req.body;
+  const { customer_name, customer_phone, customer_email, items, total, shipping_fee, governorate, notes } = req.body;
   if (!customer_name || !customer_phone || !items || !total) {
     return res.status(400).json({ error: 'بيانات ناقصة' });
   }
@@ -42,10 +42,11 @@ router.post('/', async (req, res) => {
   }
 
   try {
+    const fee = Number(shipping_fee) || 0;
     const result = db.prepare(
-      `INSERT INTO orders (user_id, customer_name, customer_phone, customer_email, items, total, notes)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
-    ).run(userId, customer_name, customer_phone, email, JSON.stringify(items), total, notes || null);
+      `INSERT INTO orders (user_id, customer_name, customer_phone, customer_email, items, total, shipping_fee, governorate, notes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).run(userId, customer_name, customer_phone, email, JSON.stringify(items), total, fee, governorate || null, notes || null);
     const orderId = result.lastInsertRowid;
 
     // Decrement stock for each ordered item
@@ -55,7 +56,7 @@ router.post('/', async (req, res) => {
 
     // Send confirmation email asynchronously
     const storeName = db.prepare("SELECT value FROM site_settings WHERE key='store_name'").get()?.value;
-    sendOrderConfirmation({ to: email, orderId, items, total, storeName }).catch(() => {});
+    sendOrderConfirmation({ to: email, orderId, items, total, shippingFee: fee, governorate: governorate || null, storeName }).catch(() => {});
     res.json({ id: orderId, message: 'تم إرسال طلبك بنجاح' });
   } catch (e) {
     console.error(e);
