@@ -38,7 +38,13 @@ export default function CartPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const items = cart.map(i => ({ id: i.product.id, name: i.product.name, price: i.product.price, qty: i.qty }));
+      const items = cart.map(i => ({
+        id: i.product.id,
+        name: i.product.name,
+        price: i.product.price,
+        qty: i.qty,
+        image: i.product.image || null,
+      }));
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -47,7 +53,10 @@ export default function CartPage() {
           ...form,
           items,
           total,
-          notes: `${form.governorate ? `المحافظة: ${form.governorate} — رسوم التوصيل: ${shippingFee} دينار\n` : ''}${form.notes}`.trim(),
+          subtotal,
+          shipping_fee: shippingFee,
+          governorate: form.governorate,
+          notes: form.notes.trim() || null,
         }),
       });
       const data = await res.json();
