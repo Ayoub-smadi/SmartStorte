@@ -2,9 +2,14 @@ import { useState } from 'react';
 import { useApp } from '../App.jsx';
 
 export default function CartPage() {
-  const { cart, updateQty, removeFromCart, clearCart, navigate, toast } = useApp();
+  const { cart, updateQty, removeFromCart, clearCart, navigate, toast, user } = useApp();
   const [step, setStep] = useState('cart'); // 'cart' | 'checkout' | 'success'
-  const [form, setForm] = useState({ customer_name: '', customer_phone: '', notes: '' });
+  const [form, setForm] = useState({
+    customer_name: user?.username || '',
+    customer_phone: '',
+    customer_email: user?.email || '',
+    notes: '',
+  });
   const [loading, setLoading] = useState(false);
   const [orderId, setOrderId] = useState(null);
 
@@ -37,18 +42,30 @@ export default function CartPage() {
   /* ─── SUCCESS ─── */
   if (step === 'success') return (
     <div style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ textAlign: 'center', maxWidth: 460 }}>
+      <div style={{ textAlign: 'center', maxWidth: 480 }}>
         <div style={{ fontSize: 80, marginBottom: 16 }}>🎉</div>
         <h2 style={{ fontSize: 26, fontWeight: 900, color: '#004729', marginBottom: 12 }}>تم استلام طلبك!</h2>
         <p style={{ color: '#555', fontSize: 16, lineHeight: 1.8, marginBottom: 8 }}>
           رقم طلبك: <strong style={{ color: '#004729' }}>#{orderId}</strong>
         </p>
-        <p style={{ color: '#555', fontSize: 15, lineHeight: 1.8, marginBottom: 32 }}>
+        <p style={{ color: '#555', fontSize: 15, lineHeight: 1.8, marginBottom: 8 }}>
           سيتواصل معك فريقنا على الرقم المسجل لتأكيد الطلب والتوصيل.
         </p>
-        <button onClick={() => navigate('#/')} className="btn btn-primary" style={{ padding: '13px 36px', fontSize: 16 }}>
-          🏠 العودة للرئيسية
-        </button>
+        {form.customer_email && (
+          <p style={{ color: '#888', fontSize: 14, marginBottom: 28 }}>
+            📧 سيصلك تأكيد على بريدك الإلكتروني
+          </p>
+        )}
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          {user && !user.isAdmin && (
+            <button onClick={() => navigate('#/my-orders')} className="btn btn-outline" style={{ padding: '12px 28px', fontSize: 15 }}>
+              📋 تابع طلباتك
+            </button>
+          )}
+          <button onClick={() => navigate('#/')} className="btn btn-primary" style={{ padding: '12px 28px', fontSize: 15 }}>
+            🏠 العودة للرئيسية
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -101,17 +118,14 @@ export default function CartPage() {
               </div>
               {cart.map(({ product, qty }) => (
                 <div key={product.id} style={{ display: 'flex', gap: 16, padding: '18px 24px', borderBottom: '1px solid #f0f0f0', alignItems: 'center' }}>
-                  {/* Image */}
                   <div style={{ width: 72, height: 72, borderRadius: 10, overflow: 'hidden', background: '#f5f7f5', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {product.image ? <img src={product.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 32 }}>📦</span>}
                   </div>
-                  {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', marginBottom: 4, lineHeight: 1.3 }}>{product.name}</div>
                     <div style={{ color: '#004729', fontWeight: 800, fontSize: 15 }}>{(product.price * qty).toLocaleString()} د.ع</div>
                     <div style={{ fontSize: 13, color: '#aaa' }}>{product.price.toLocaleString()} د.ع × {qty}</div>
                   </div>
-                  {/* Qty controls */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#f5f7f5', borderRadius: 10, padding: '4px 8px' }}>
                     <button onClick={() => updateQty(product.id, qty - 1)}
                       style={{ width: 28, height: 28, borderRadius: 7, border: 'none', background: '#e0e0e0', fontWeight: 900, fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
@@ -119,7 +133,6 @@ export default function CartPage() {
                     <button onClick={() => updateQty(product.id, qty + 1)}
                       style={{ width: 28, height: 28, borderRadius: 7, border: 'none', background: '#004729', color: '#fff', fontWeight: 900, fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
                   </div>
-                  {/* Remove */}
                   <button onClick={() => removeFromCart(product.id)}
                     style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', fontSize: 20, padding: 4, lineHeight: 1 }}>×</button>
                 </div>
@@ -141,6 +154,12 @@ export default function CartPage() {
                   <input className="form-input" type="tel" value={form.customer_phone}
                     onChange={e => setForm(f => ({ ...f, customer_phone: e.target.value }))}
                     placeholder="07XXXXXXXXX" required />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">البريد الإلكتروني <span style={{ color: '#aaa', fontWeight: 400 }}>(لاستلام تأكيد الطلب)</span></label>
+                  <input className="form-input" type="email" value={form.customer_email}
+                    onChange={e => setForm(f => ({ ...f, customer_email: e.target.value }))}
+                    placeholder="example@email.com" />
                 </div>
                 <div className="form-group">
                   <label className="form-label">ملاحظات (اختياري)</label>

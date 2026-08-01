@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useApp } from '../App.jsx';
 
 function Modal({ title, onClose, children }) {
@@ -79,14 +79,14 @@ function ProductForm({ initial, categories, onSave, onClose }) {
       </div>
       <div className="form-group">
         <label className="form-label">صورة المنتج</label>
-        <input type="file" accept="image/*" onChange={e => setImage(e.target.files[0])}
-          style={{ fontFamily: 'Cairo,sans-serif', fontSize: 14, width: '100%' }} />
+        {initial?.image && !image && (
+          <img src={initial.image} alt="" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, marginBottom: 8, display: 'block' }} />
+        )}
+        <input type="file" accept="image/*" onChange={e => setImage(e.target.files[0])} style={{ fontSize: 13 }} />
       </div>
       <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 8 }}>
         <button type="button" onClick={onClose} className="btn btn-outline">إلغاء</button>
-        <button type="submit" className="btn btn-primary" disabled={loading}>
-          {loading ? '⏳ جاري الحفظ...' : '💾 حفظ'}
-        </button>
+        <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? '⏳ جاري الحفظ...' : '💾 حفظ'}</button>
       </div>
     </form>
   );
@@ -121,82 +121,249 @@ function CategoryForm({ initial, onSave, onClose }) {
       </div>
       <div className="form-group">
         <label className="form-label">صورة القسم</label>
-        <input type="file" accept="image/*" onChange={e => setImage(e.target.files[0])}
-          style={{ fontFamily: 'Cairo,sans-serif', fontSize: 14, width: '100%' }} />
+        {initial?.image && !image && (
+          <img src={initial.image} alt="" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, marginBottom: 8, display: 'block' }} />
+        )}
+        <input type="file" accept="image/*" onChange={e => setImage(e.target.files[0])} style={{ fontSize: 13 }} />
       </div>
       <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 8 }}>
         <button type="button" onClick={onClose} className="btn btn-outline">إلغاء</button>
-        <button type="submit" className="btn btn-primary" disabled={loading}>
-          {loading ? '⏳ جاري الحفظ...' : '💾 حفظ'}
-        </button>
+        <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? '⏳...' : '💾 حفظ'}</button>
       </div>
     </form>
   );
 }
 
 const STATUS_MAP = {
-  pending:   { label: 'قيد المعالجة', color: '#FF6F00', bg: '#FFF3E0' },
-  confirmed: { label: 'مؤكد',         color: '#1565C0', bg: '#E3F0FF' },
-  delivered: { label: 'تم التوصيل',   color: '#2E7D32', bg: '#E8F5E9' },
-  cancelled: { label: 'ملغي',         color: '#C62828', bg: '#FCE4E4' },
+  pending:   { label: '⏳ قيد المعالجة', bg: '#FFF8E1', color: '#FF6F00' },
+  confirmed: { label: '✅ مؤكد',         bg: '#E8F5E9', color: '#2E7D32' },
+  delivered: { label: '📦 تم التوصيل',   bg: '#E3F2FD', color: '#1565C0' },
+  cancelled: { label: '❌ ملغي',          bg: '#FFEBEE', color: '#C62828' },
 };
 
+// ── Site Settings Tab ──
+function SettingsTab({ toast, reloadSettings }) {
+  const [s, setS] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [features, setFeatures] = useState([]);
+  const fileRef = useRef();
+
+  useEffect(() => {
+    fetch('/api/settings', { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => {
+        setS(data);
+        setFeatures(Array.isArray(data.features) ? data.features : []);
+        setLogoPreview(data.logo_url || '/logo.png');
+      });
+  }, []);
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
+  };
+
+  const uploadLogo = async () => {
+    if (!logoFile) return;
+    const fd = new FormData();
+    fd.append('logo', logoFile);
+    const res = await fetch('/api/settings/logo', { method: 'POST', credentials: 'include', body: fd });
+    const data = await res.json();
+    if (res.ok) { setLogoFile(null); return data.logo_url; }
+    return null;
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    // Upload logo first if changed
+    if (logoFile) await uploadLogo();
+    // Save settings
+    const payload = { ...s, features };
+    delete payload.logo_url;
+    const res = await fetch('/api/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    });
+    setSaving(false);
+    if (res.ok) {
+      toast('✅ تم حفظ الإعدادات بنجاح');
+      reloadSettings();
+    } else {
+      toast('حدث خطأ أثناء الحفظ', 'error');
+    }
+  };
+
+  if (!s) return <div className="spinner" style={{ marginTop: 60 }} />;
+
+  const field = (label, key, placeholder, multiline) => (
+    <div className="form-group">
+      <label className="form-label">{label}</label>
+      {multiline
+        ? <textarea className="form-textarea" value={s[key] || ''} onChange={e => setS(p => ({ ...p, [key]: e.target.value }))} placeholder={placeholder} rows={2} />
+        : <input className="form-input" value={s[key] || ''} onChange={e => setS(p => ({ ...p, [key]: e.target.value }))} placeholder={placeholder} />
+      }
+    </div>
+  );
+
+  const sectionTitle = (title) => (
+    <div style={{ fontWeight: 800, fontSize: 15, color: '#004729', margin: '28px 0 16px', paddingBottom: 8, borderBottom: '2px solid #e8f5e9' }}>{title}</div>
+  );
+
+  return (
+    <form onSubmit={handleSave}>
+      {/* Logo */}
+      {sectionTitle('🖼️ الشعار (Logo)')}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 20 }}>
+        <img src={logoPreview} alt="logo" style={{ width: 80, height: 80, objectFit: 'contain', border: '2px dashed #c8e6c9', borderRadius: 12, background: '#f0f9f4', padding: 6 }} />
+        <div>
+          <input ref={fileRef} type="file" accept="image/*" onChange={handleLogoChange} style={{ display: 'none' }} />
+          <button type="button" onClick={() => fileRef.current.click()}
+            className="btn btn-outline" style={{ marginBottom: 6 }}>
+            📁 اختر شعار جديد
+          </button>
+          {logoFile && <div style={{ fontSize: 12, color: '#004729', marginTop: 4 }}>✅ {logoFile.name}</div>}
+          <div style={{ fontSize: 12, color: '#aaa', marginTop: 4 }}>PNG / JPG — حتى 5MB</div>
+        </div>
+      </div>
+
+      {/* Store identity */}
+      {sectionTitle('🏪 هوية المتجر')}
+      <div className="form-row">
+        {field('اسم المتجر', 'store_name', 'بذور')}
+        {field('الشعار التعريفي', 'store_tagline', 'وجهتك الأولى للبذور...')}
+      </div>
+
+      {/* Hero section */}
+      {sectionTitle('🌟 قسم الهيرو (الصفحة الرئيسية)')}
+      <div className="form-row">
+        {field('العنوان الكبير', 'hero_title', 'أجود البذور الزراعية')}
+        {field('العنوان الثانوي', 'hero_subtitle', 'لكل موسم وكل محصول')}
+      </div>
+      {field('الوصف', 'hero_desc', 'محاصيل شتوية وصيفية...', true)}
+      <div className="form-row">
+        {field('نص زر "تسوق"', 'hero_btn_shop', '🛒 تسوق الآن')}
+        {field('نص زر "العروض"', 'hero_btn_offers', '⭐ العروض المميزة')}
+      </div>
+
+      {/* Features */}
+      {sectionTitle('✨ مميزات المتجر (4 مربعات)')}
+      {features.map((f, i) => (
+        <div key={i} style={{ background: '#f8fdf9', border: '1px solid #c8e6c9', borderRadius: 10, padding: '14px 18px', marginBottom: 12 }}>
+          <div style={{ fontWeight: 700, fontSize: 13, color: '#555', marginBottom: 10 }}>مميزة #{i + 1}</div>
+          <div className="form-row" style={{ gap: 10 }}>
+            <div className="form-group" style={{ flex: '0 0 80px' }}>
+              <label className="form-label">أيقونة</label>
+              <input className="form-input" value={f.icon} onChange={e => setFeatures(prev => prev.map((x, j) => j === i ? { ...x, icon: e.target.value } : x))} placeholder="🌿" style={{ fontSize: 20, textAlign: 'center' }} />
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label">العنوان</label>
+              <input className="form-input" value={f.title} onChange={e => setFeatures(prev => prev.map((x, j) => j === i ? { ...x, title: e.target.value } : x))} />
+            </div>
+            <div className="form-group" style={{ flex: 2 }}>
+              <label className="form-label">الوصف</label>
+              <input className="form-input" value={f.sub} onChange={e => setFeatures(prev => prev.map((x, j) => j === i ? { ...x, sub: e.target.value } : x))} />
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {/* Footer */}
+      {sectionTitle('📋 الفوتر')}
+      {field('وصف المتجر في الفوتر', 'footer_desc', 'وجهتك الأولى...', true)}
+      <div className="form-row">
+        {field('رقم الهاتف', 'footer_phone', '07700000000')}
+        {field('البريد الإلكتروني', 'footer_email_contact', 'info@seeds-pro.com')}
+      </div>
+      <div className="form-row">
+        {field('الموقع / المدينة', 'footer_location', 'العراق')}
+        {field('نص حقوق النشر', 'footer_copyright', '© 2024 بذور')}
+      </div>
+
+      {/* SMTP */}
+      {sectionTitle('📧 إعدادات البريد الإلكتروني (SMTP)')}
+      <div style={{ background: '#fff8e1', border: '1px solid #ffe082', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#666' }}>
+        💡 مطلوب لإرسال تأكيد الطلبات وإشعارات الحالة للعملاء تلقائياً.
+        يمكن استخدام Gmail (app password) أو أي خادم SMTP.
+      </div>
+      <div className="form-row">
+        {field('SMTP Host', 'smtp_host', 'smtp.gmail.com')}
+        {field('Port', 'smtp_port', '587')}
+      </div>
+      <div className="form-row">
+        {field('اسم المستخدم / الإيميل', 'smtp_user', 'example@gmail.com')}
+        <div className="form-group">
+          <label className="form-label">كلمة المرور (App Password)</label>
+          <input className="form-input" type="password" value={s.smtp_pass || ''} onChange={e => setS(p => ({ ...p, smtp_pass: e.target.value }))} placeholder="••••••••••••" />
+        </div>
+      </div>
+      {field('من (from)', 'smtp_from', '"بذور" <noreply@seeds-pro.com>')}
+
+      <div style={{ marginTop: 28 }}>
+        <button type="submit" className="btn btn-primary" disabled={saving} style={{ padding: '13px 40px', fontSize: 16 }}>
+          {saving ? '⏳ جاري الحفظ...' : '💾 حفظ جميع الإعدادات'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 export default function AdminPage() {
-  const { toast } = useApp();
+  const { toast, reloadSettings } = useApp();
   const [tab, setTab] = useState('products');
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
   const [modal, setModal] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [search, setSearch] = useState('');
   const [expandedOrder, setExpandedOrder] = useState(null);
 
   const loadAll = async () => {
     setLoading(true);
-    const [p, c, o] = await Promise.all([
+    const [prods, cats, ords] = await Promise.all([
       fetch('/api/products?limit=200', { credentials: 'include' }).then(r => r.json()),
       fetch('/api/categories', { credentials: 'include' }).then(r => r.json()),
       fetch('/api/orders', { credentials: 'include' }).then(r => r.json()),
     ]);
-    setProducts(p); setCategories(c); setOrders(Array.isArray(o) ? o : []); setLoading(false);
+    setProducts(prods); setCategories(cats); setOrders(ords);
+    setLoading(false);
   };
 
   useEffect(() => { loadAll(); }, []);
 
-  const handleDelete = async () => {
-    if (!deleteConfirm) return;
-    const url = deleteConfirm.type === 'product'
-      ? `/api/products/${deleteConfirm.id}`
-      : deleteConfirm.type === 'order'
-      ? `/api/orders/${deleteConfirm.id}`
-      : `/api/categories/${deleteConfirm.id}`;
-    const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
-    if (res.ok) { toast('تم الحذف بنجاح', 'success'); loadAll(); }
-    else toast('فشل الحذف', 'error');
-    setDeleteConfirm(null);
+  const updateOrderStatus = async (id, status) => {
+    await fetch(`/api/orders/${id}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', body: JSON.stringify({ status }),
+    });
+    setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
+    toast('تم تحديث حالة الطلب');
   };
 
-  const updateOrderStatus = async (id, status) => {
-    const res = await fetch(`/api/orders/${id}`, {
-      method: 'PUT', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-    });
-    if (res.ok) { toast('تم تحديث حالة الطلب'); loadAll(); }
-    else toast('فشل التحديث', 'error');
+  const handleDelete = async () => {
+    const { type, id } = deleteConfirm;
+    const url = type === 'product' ? `/api/products/${id}` : type === 'category' ? `/api/categories/${id}` : `/api/orders/${id}`;
+    await fetch(url, { method: 'DELETE', credentials: 'include' });
+    setDeleteConfirm(null);
+    loadAll();
+    toast('تم الحذف بنجاح');
   };
 
   const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(search.toLowerCase()) ||
-    (p.category_name || '').includes(search)
+    !search || p.name.toLowerCase().includes(search.toLowerCase())
   );
 
   const tabStyle = (t) => ({
-    padding: '10px 24px', borderRadius: '10px 10px 0 0', border: 'none',
-    fontFamily: 'Cairo,sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer',
-    background: tab === t ? '#fff' : 'transparent',
+    padding: '12px 22px', background: 'transparent', border: 'none', cursor: 'pointer',
+    fontFamily: 'Cairo, sans-serif', fontWeight: 700, fontSize: 14,
     color: tab === t ? 'var(--primary)' : 'rgba(255,255,255,0.8)',
     borderBottom: tab === t ? '3px solid var(--accent)' : 'none',
     transition: '0.2s',
@@ -243,37 +410,47 @@ export default function AdminPage() {
                 }}>{pendingOrders}</span>
               )}
             </button>
+            <button onClick={() => setTab('settings')} style={tabStyle('settings')}>⚙️ إعدادات الموقع</button>
           </div>
         </div>
       </div>
 
       {/* Toolbar */}
-      <div style={{ background: '#fff', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', marginBottom: 24 }}>
-        <div className="container" style={{ padding: '20px 20px' }}>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-            {tab === 'products' ? (
-              <>
-                <input className="form-input" style={{ maxWidth: 280, flex: 1 }} placeholder="🔍 بحث في المنتجات..."
-                  value={search} onChange={e => setSearch(e.target.value)} />
-                <button onClick={() => setModal({ type: 'add-product' })} className="btn btn-accent">
-                  + إضافة منتج
+      {tab !== 'settings' && (
+        <div style={{ background: '#fff', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', marginBottom: 24 }}>
+          <div className="container" style={{ padding: '20px 20px' }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+              {tab === 'products' ? (
+                <>
+                  <input className="form-input" style={{ maxWidth: 280, flex: 1 }} placeholder="🔍 بحث في المنتجات..."
+                    value={search} onChange={e => setSearch(e.target.value)} />
+                  <button onClick={() => setModal({ type: 'add-product' })} className="btn btn-accent">
+                    + إضافة منتج
+                  </button>
+                </>
+              ) : tab === 'categories' ? (
+                <button onClick={() => setModal({ type: 'add-cat' })} className="btn btn-accent">
+                  + إضافة قسم
                 </button>
-              </>
-            ) : tab === 'categories' ? (
-              <button onClick={() => setModal({ type: 'add-cat' })} className="btn btn-accent">
-                + إضافة قسم
-              </button>
-            ) : (
-              <div style={{ color: 'var(--text-light)', fontSize: 14 }}>
-                إجمالي الطلبات: <strong>{orders.length}</strong> — قيد المعالجة: <strong style={{ color: '#FF6F00' }}>{pendingOrders}</strong>
-              </div>
-            )}
+              ) : (
+                <div style={{ color: 'var(--text-light)', fontSize: 14 }}>
+                  إجمالي الطلبات: <strong>{orders.length}</strong> — قيد المعالجة: <strong style={{ color: '#FF6F00' }}>{pendingOrders}</strong>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="container" style={{ padding: '0 20px 48px' }}>
-        {loading ? <div className="spinner" /> : (
+      <div className="container" style={{ padding: tab === 'settings' ? '32px 20px 48px' : '0 20px 48px' }}>
+        {/* ── Site Settings Tab ── */}
+        {tab === 'settings' && (
+          <div style={{ background: '#fff', borderRadius: 16, boxShadow: 'var(--shadow)', padding: '32px 36px', border: '1px solid var(--border)' }}>
+            <SettingsTab toast={toast} reloadSettings={reloadSettings} />
+          </div>
+        )}
+
+        {tab !== 'settings' && (loading ? <div className="spinner" /> : (
           <>
             {/* ── Products Tab ── */}
             {tab === 'products' && (
@@ -371,7 +548,6 @@ export default function AdminPage() {
                       const isExpanded = expandedOrder === order.id;
                       return (
                         <div key={order.id} style={{ background: '#fff', borderRadius: 14, boxShadow: 'var(--shadow)', border: '1px solid var(--border)', overflow: 'hidden' }}>
-                          {/* Order header */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 22px', flexWrap: 'wrap', cursor: 'pointer' }}
                             onClick={() => setExpandedOrder(isExpanded ? null : order.id)}>
                             <div style={{ background: '#f0f9f4', borderRadius: 10, padding: '8px 14px', minWidth: 60, textAlign: 'center' }}>
@@ -379,7 +555,7 @@ export default function AdminPage() {
                             </div>
                             <div style={{ flex: 1, minWidth: 180 }}>
                               <div style={{ fontWeight: 700, fontSize: 15 }}>{order.customer_name}</div>
-                              <div style={{ color: '#888', fontSize: 13 }}>📞 {order.customer_phone}</div>
+                              <div style={{ color: '#888', fontSize: 13 }}>📞 {order.customer_phone}{order.customer_email && <> · 📧 {order.customer_email}</>}</div>
                             </div>
                             <div style={{ textAlign: 'center', minWidth: 100 }}>
                               <div style={{ fontWeight: 900, fontSize: 16, color: '#004729' }}>{Number(order.total).toLocaleString()}</div>
@@ -396,10 +572,8 @@ export default function AdminPage() {
                             <div style={{ color: '#aaa', fontSize: 18 }}>{isExpanded ? '▲' : '▼'}</div>
                           </div>
 
-                          {/* Expanded details */}
                           {isExpanded && (
                             <div style={{ borderTop: '1px solid var(--border)', padding: '18px 22px', background: '#fafafa' }}>
-                              {/* Items */}
                               <div style={{ marginBottom: 16 }}>
                                 <div style={{ fontWeight: 700, marginBottom: 10, fontSize: 14 }}>🧾 تفاصيل الطلب</div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -417,7 +591,6 @@ export default function AdminPage() {
                                 )}
                               </div>
 
-                              {/* Actions */}
                               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
                                 <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text)' }}>تغيير الحالة:</span>
                                 {Object.entries(STATUS_MAP).map(([key, val]) => (
@@ -447,7 +620,7 @@ export default function AdminPage() {
               </div>
             )}
           </>
-        )}
+        ))}
       </div>
 
       {/* Modals */}

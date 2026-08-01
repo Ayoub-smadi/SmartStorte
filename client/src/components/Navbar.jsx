@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { useApp } from '../App.jsx';
 
 export default function Navbar() {
-  const { user, setUser, navigate, toast, cartCount } = useApp();
+  const { user, setUser, navigate, toast, cartCount, settings } = useApp();
   const [search, setSearch] = useState('');
+
+  const storeName = settings?.store_name || 'بذور';
+  const logoUrl = settings?.logo_url || '/logo.png';
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -31,8 +34,8 @@ export default function Navbar() {
 
         {/* Logo */}
         <a href="#/" style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, textDecoration: 'none' }}>
-          <img src="/logo.png" alt="logo" style={{ width: 44, height: 44, objectFit: 'contain' }} />
-          <div style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 20, letterSpacing: 1 }}>بذور</div>
+          <img src={logoUrl} alt="logo" style={{ width: 44, height: 44, objectFit: 'contain' }} />
+          <div style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 20, letterSpacing: 1 }}>{storeName}</div>
         </a>
 
         {/* Search */}
@@ -40,7 +43,7 @@ export default function Navbar() {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="ابحث عن البذور..."
+            placeholder={`ابحث في ${storeName}...`}
             style={{
               flex: 1, padding: '9px 16px',
               border: '1.5px solid #c8d9cf',
@@ -101,6 +104,12 @@ export default function Navbar() {
               borderRadius: 8, fontSize: 14, background: '#004729',
               boxShadow: '0 2px 8px rgba(0,71,41,0.3)', marginLeft: 4
             }}>⚙️ التحكم</a>
+          )}
+          {user && !user.isAdmin && (
+            <a href="#/my-orders" style={{
+              color: '#004729', fontWeight: 700, padding: '7px 12px',
+              borderRadius: 8, fontSize: 14, border: '1.5px solid #c8d9cf', marginLeft: 4
+            }}>📋 طلباتي</a>
           )}
           {user ? (
             <button onClick={logout} style={{

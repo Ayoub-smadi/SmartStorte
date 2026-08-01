@@ -9,6 +9,7 @@ import authRouter from './routes/auth.js';
 import productsRouter from './routes/products.js';
 import categoriesRouter from './routes/categories.js';
 import ordersRouter from './routes/orders.js';
+import settingsRouter from './routes/settings.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -34,6 +35,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/orders', ordersRouter);
+app.use('/api/settings', settingsRouter);
 
 app.listen(PORT, () => {
   console.log(`🚀 API server running on port ${PORT}`);

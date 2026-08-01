@@ -8,6 +8,7 @@ import ProductDetailPage from './pages/ProductDetailPage.jsx';
 import AdminPage from './pages/AdminPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import CartPage from './pages/CartPage.jsx';
+import MyOrdersPage from './pages/MyOrdersPage.jsx';
 
 export const AppContext = createContext(null);
 export function useApp() { return useContext(AppContext); }
@@ -16,6 +17,7 @@ export default function App() {
   const [route, setRoute] = useState(window.location.hash || '#/');
   const [user, setUser] = useState(null);
   const [toasts, setToasts] = useState([]);
+  const [settings, setSettings] = useState({});
   const [cart, setCart] = useState(() => {
     try { return JSON.parse(localStorage.getItem('bzour_cart') || '[]'); } catch { return []; }
   });
@@ -29,6 +31,11 @@ export default function App() {
   useEffect(() => {
     fetch('/api/auth/me', { credentials: 'include' })
       .then(r => r.json()).then(u => setUser(u)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(r => r.json()).then(s => setSettings(s)).catch(() => {});
   }, []);
 
   // Persist cart to localStorage
@@ -45,6 +52,10 @@ export default function App() {
     const id = Date.now();
     setToasts(t => [...t, { id, message, type }]);
     setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3500);
+  };
+
+  const reloadSettings = () => {
+    fetch('/api/settings').then(r => r.json()).then(s => setSettings(s)).catch(() => {});
   };
 
   // Cart helpers
@@ -76,6 +87,7 @@ export default function App() {
     if (route === '#/' || route === '' || route === '#') return <HomePage />;
     if (route === '#/products') return <ProductsPage />;
     if (route === '#/cart') return <CartPage />;
+    if (route === '#/my-orders') return user ? <MyOrdersPage /> : <LoginPage />;
     if (route.startsWith('#/products/')) {
       const id = route.replace('#/products/', '');
       return <ProductDetailPage id={id} />;
@@ -90,7 +102,7 @@ export default function App() {
   };
 
   return (
-    <AppContext.Provider value={{ user, setUser, navigate, toast, cart, addToCart, removeFromCart, updateQty, clearCart, cartCount }}>
+    <AppContext.Provider value={{ user, setUser, navigate, toast, cart, addToCart, removeFromCart, updateQty, clearCart, cartCount, settings, reloadSettings }}>
       <Navbar />
       <main style={{ minHeight: 'calc(100vh - 140px)' }}>
         {renderPage()}
