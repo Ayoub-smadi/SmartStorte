@@ -1,6 +1,21 @@
 import { useState } from 'react';
 import { useApp } from '../App.jsx';
 
+const GOVERNORATES = [
+  { name: 'عمّان',   fee: 2 },
+  { name: 'إربد',   fee: 3 },
+  { name: 'الزرقاء', fee: 3 },
+  { name: 'البلقاء', fee: 3 },
+  { name: 'مادبا',  fee: 3 },
+  { name: 'الكرك',  fee: 3 },
+  { name: 'الطفيلة', fee: 3 },
+  { name: 'معان',   fee: 3 },
+  { name: 'العقبة', fee: 3 },
+  { name: 'جرش',   fee: 3 },
+  { name: 'عجلون', fee: 3 },
+  { name: 'المفرق', fee: 3 },
+];
+
 export default function CartPage() {
   const { cart, updateQty, removeFromCart, clearCart, navigate, toast, user } = useApp();
   const [step, setStep] = useState('cart'); // 'cart' | 'checkout' | 'success'
@@ -8,12 +23,16 @@ export default function CartPage() {
     customer_name: user?.username || '',
     customer_phone: '',
     customer_email: user?.email || '',
+    governorate: '',
     notes: '',
   });
   const [loading, setLoading] = useState(false);
   const [orderId, setOrderId] = useState(null);
 
-  const total = cart.reduce((s, i) => s + i.product.price * i.qty, 0);
+  const subtotal = cart.reduce((s, i) => s + i.product.price * i.qty, 0);
+  const selectedGov = GOVERNORATES.find(g => g.name === form.governorate);
+  const shippingFee = selectedGov ? selectedGov.fee : 0;
+  const total = subtotal + shippingFee;
 
   const handleOrder = async (e) => {
     e.preventDefault();
@@ -24,7 +43,12 @@ export default function CartPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ ...form, items, total }),
+        body: JSON.stringify({
+          ...form,
+          items,
+          total,
+          notes: `${form.governorate ? `المحافظة: ${form.governorate} — رسوم التوصيل: ${shippingFee} دينار\n` : ''}${form.notes}`.trim(),
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -156,6 +180,18 @@ export default function CartPage() {
                     placeholder="07XXXXXXXXX" required />
                 </div>
                 <div className="form-group">
+                  <label className="form-label">المحافظة *</label>
+                  <select className="form-select" value={form.governorate}
+                    onChange={e => setForm(f => ({ ...f, governorate: e.target.value }))} required>
+                    <option value="">اختر محافظتك...</option>
+                    {GOVERNORATES.map(g => (
+                      <option key={g.name} value={g.name}>
+                        {g.name} — توصيل {g.fee} دينار
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
                   <label className="form-label">البريد الإلكتروني * <span style={{ color: '#a8e6c4', fontWeight: 400, fontSize: 12 }}>سيصلك تأكيد الطلب وتحديثات الحالة</span></label>
                   <input className="form-input" type="email" value={form.customer_email}
                     onChange={e => setForm(f => ({ ...f, customer_email: e.target.value }))}
@@ -188,12 +224,22 @@ export default function CartPage() {
                 <span style={{ fontWeight: 700, color: '#004729', whiteSpace: 'nowrap' }}>{(product.price * qty).toLocaleString()}</span>
               </div>
             ))}
-            <div style={{ borderTop: '2px solid #f0f0f0', marginTop: 16, paddingTop: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                <span style={{ fontWeight: 800, fontSize: 16 }}>المجموع</span>
-                <span style={{ fontWeight: 900, fontSize: 20, color: '#004729' }}>{total.toLocaleString()} <small style={{ fontSize: 13 }}>د.ع</small></span>
+            <div style={{ borderTop: '2px solid #f0f0f0', marginTop: 16, paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: '#555' }}>
+                <span>المجموع الفرعي</span>
+                <span style={{ fontWeight: 700 }}>{subtotal.toLocaleString()} دينار</span>
               </div>
-              <div style={{ color: '#888', fontSize: 12, marginTop: 4 }}>+ رسوم التوصيل تحدد عند التأكيد</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: '#555' }}>
+                <span>🚚 رسوم التوصيل {form.governorate ? `(${form.governorate})` : ''}</span>
+                {shippingFee > 0
+                  ? <span style={{ fontWeight: 700, color: '#FF6F00' }}>{shippingFee} دينار</span>
+                  : <span style={{ color: '#aaa', fontSize: 13 }}>اختر المحافظة</span>
+                }
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: '1px dashed #e0e0e0', paddingTop: 10, marginTop: 4 }}>
+                <span style={{ fontWeight: 800, fontSize: 16 }}>الإجمالي</span>
+                <span style={{ fontWeight: 900, fontSize: 20, color: '#004729' }}>{total.toLocaleString()} <small style={{ fontSize: 13 }}>دينار</small></span>
+              </div>
             </div>
             {step === 'cart' ? (
               <button onClick={() => setStep('checkout')}
