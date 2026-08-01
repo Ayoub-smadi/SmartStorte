@@ -1,36 +1,60 @@
 import express from 'express';
 import db from '../database.js';
-import { sendOrderConfirmation, sendOrderStatusUpdate } from '../email.js';
+import { sendOrderConfirmation, sendOrderStatusUpdate, sendOutOfStockNotification } from '../email.js';
 
 const router = express.Router();
 
-// Place an order (public or logged-in user)
+// Place an order — requires login
 router.post('/', async (req, res) => {
-  const { customer_name, customer_phone, customer_email, items, total, notes } = req.body;
+  // Must be logged in to place an order
+  if (!req.session?.userId) {
+    return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً لإتمام الطلب' });
+  }
+
+  const { customer_name, customer_phone, items, total, notes } = req.body;
   if (!customer_name || !customer_phone || !items || !total) {
     return res.status(400).json({ error: 'بيانات ناقصة' });
   }
-  if (!customer_email && !req.session?.userId) {
-    return res.status(400).json({ error: 'البريد الإلكتروني مطلوب لاستلام تأكيد الطلب' });
+
+  const userId = req.session.userId;
+  const user = db.prepare('SELECT email FROM users WHERE id = ?').get(userId);
+  const email = user?.email || null;
+
+  // Check stock for each item
+  const outOfStockItems = [];
+  for (const item of items) {
+    const product = db.prepare('SELECT name, stock FROM products WHERE id = ?').get(item.id);
+    if (product && product.stock !== null && product.stock <= 0) {
+      outOfStockItems.push({ id: item.id, name: product.name });
+    }
   }
-  // Use logged-in user's email if not provided
-  let email = customer_email || null;
-  const userId = req.session?.userId || null;
-  if (!email && userId) {
-    const user = db.prepare('SELECT email FROM users WHERE id = ?').get(userId);
-    if (user?.email) email = user.email;
+  if (outOfStockItems.length > 0) {
+    // Notify user by email about out-of-stock items
+    const storeName = db.prepare("SELECT value FROM site_settings WHERE key='store_name'").get()?.value;
+    sendOutOfStockNotification({ to: email, outOfStockItems, storeName }).catch(() => {});
+    return res.status(400).json({
+      error: `المنتجات التالية غير متوفرة حالياً: ${outOfStockItems.map(i => i.name).join('، ')}`,
+    });
   }
+
   try {
     const result = db.prepare(
       `INSERT INTO orders (user_id, customer_name, customer_phone, customer_email, items, total, notes)
        VALUES (?, ?, ?, ?, ?, ?, ?)`
     ).run(userId, customer_name, customer_phone, email, JSON.stringify(items), total, notes || null);
     const orderId = result.lastInsertRowid;
+
+    // Decrement stock for each ordered item
+    for (const item of items) {
+      db.prepare('UPDATE products SET stock = MAX(0, stock - ?) WHERE id = ?').run(item.qty || 1, item.id);
+    }
+
     // Send confirmation email asynchronously
     const storeName = db.prepare("SELECT value FROM site_settings WHERE key='store_name'").get()?.value;
     sendOrderConfirmation({ to: email, orderId, items, total, storeName }).catch(() => {});
     res.json({ id: orderId, message: 'تم إرسال طلبك بنجاح' });
   } catch (e) {
+    console.error(e);
     res.status(500).json({ error: 'خطأ في الخادم' });
   }
 });

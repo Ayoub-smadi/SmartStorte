@@ -54,6 +54,38 @@ export async function sendOrderConfirmation({ to, orderId, items, total, storeNa
   }
 }
 
+export async function sendOutOfStockNotification({ to, outOfStockItems, storeName }) {
+  const s = getSettings();
+  const transporter = createTransporter(s);
+  if (!transporter || !to) return;
+  const name = storeName || s.store_name || 'بذور';
+  const itemsHtml = outOfStockItems.map(i =>
+    `<li style="padding:6px 0;border-bottom:1px solid #eee;color:#333">${i.name}</li>`
+  ).join('');
+  try {
+    await transporter.sendMail({
+      from: s.smtp_from || s.smtp_user,
+      to,
+      subject: `⚠️ منتج غير متوفر في طلبك — ${name}`,
+      html: `
+        <div dir="rtl" style="font-family:Arial,sans-serif;max-width:520px;margin:auto;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden">
+          <div style="background:#FF6F00;padding:28px 32px;text-align:center">
+            <h2 style="color:#fff;margin:0;font-size:22px">⚠️ منتج غير متوفر حالياً</h2>
+          </div>
+          <div style="padding:28px 32px">
+            <p style="color:#333;font-size:15px;line-height:1.7">عذراً، المنتجات التالية غير متوفرة حالياً في مخزوننا:</p>
+            <ul style="list-style:none;padding:0;margin:16px 0;font-size:14px">${itemsHtml}</ul>
+            <p style="color:#555;font-size:14px;line-height:1.7">يرجى التواصل معنا أو اختيار منتجات بديلة. نعتذر عن الإزعاج.</p>
+          </div>
+          <div style="background:#f5f7f5;padding:16px 32px;text-align:center;color:#888;font-size:13px">${name}</div>
+        </div>
+      `,
+    });
+  } catch (err) {
+    console.error('Email send error:', err.message);
+  }
+}
+
 export async function sendOrderStatusUpdate({ to, orderId, status, storeName }) {
   const s = getSettings();
   const transporter = createTransporter(s);

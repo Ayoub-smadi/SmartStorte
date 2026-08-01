@@ -103,6 +103,27 @@ export default function CartPage() {
     </div>
   );
 
+  /* ─── NOT LOGGED IN ─── */
+  if (!user && step !== 'success') return (
+    <div style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ textAlign: 'center', maxWidth: 440 }}>
+        <div style={{ fontSize: 72, marginBottom: 16 }}>🔒</div>
+        <h2 style={{ fontSize: 22, fontWeight: 900, color: '#004729', marginBottom: 12 }}>يجب تسجيل الدخول أولاً</h2>
+        <p style={{ color: '#666', fontSize: 15, lineHeight: 1.8, marginBottom: 28 }}>
+          لإتمام طلبك وتلقّي إشعارات تأكيد الطلب والتوصيل، يجب أن يكون لديك حساب.
+        </p>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button onClick={() => navigate('#/login')} className="btn btn-primary" style={{ padding: '13px 32px', fontSize: 16 }}>
+            🔑 تسجيل الدخول
+          </button>
+          <button onClick={() => navigate('#/login?register=1')} className="btn btn-outline" style={{ padding: '13px 32px', fontSize: 15 }}>
+            🌱 حساب جديد
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   /* ─── EMPTY CART ─── */
   if (cart.length === 0 && step === 'cart') return (
     <div style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
@@ -200,12 +221,15 @@ export default function CartPage() {
                     ))}
                   </select>
                 </div>
-                <div className="form-group">
-                  <label className="form-label">البريد الإلكتروني * <span style={{ color: '#a8e6c4', fontWeight: 400, fontSize: 12 }}>سيصلك تأكيد الطلب وتحديثات الحالة</span></label>
-                  <input className="form-input" type="email" value={form.customer_email}
-                    onChange={e => setForm(f => ({ ...f, customer_email: e.target.value }))}
-                    placeholder="example@email.com" required />
-                </div>
+                {user?.email && (
+                  <div style={{ background: '#f0f9f4', border: '1px solid #c8e6c9', borderRadius: 10, padding: '12px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 18 }}>📧</span>
+                    <div>
+                      <div style={{ fontSize: 12, color: '#555', fontWeight: 600 }}>إشعارات الطلب ستُرسل إلى</div>
+                      <div style={{ fontSize: 14, color: '#004729', fontWeight: 800 }}>{user.email}</div>
+                    </div>
+                  </div>
+                )}
                 <div className="form-group">
                   <label className="form-label">ملاحظات (اختياري)</label>
                   <textarea className="form-textarea" value={form.notes}

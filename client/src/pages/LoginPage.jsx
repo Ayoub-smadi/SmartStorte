@@ -3,7 +3,9 @@ import { useApp } from '../App.jsx';
 
 export default function LoginPage() {
   const { setUser, navigate, toast, settings } = useApp();
-  const [mode, setMode] = useState('login'); // 'login' | 'register'
+  // Support ?register=1 to open register tab directly
+  const startMode = typeof window !== 'undefined' && window.location.hash.includes('register=1') ? 'register' : 'login';
+  const [mode, setMode] = useState(startMode); // 'login' | 'register'
   const [form, setForm] = useState({ username: '', password: '', email: '', confirmPassword: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -129,10 +131,10 @@ export default function LoginPage() {
                     placeholder="3 أحرف على الأقل" required autoComplete="username" />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">البريد الإلكتروني <span style={{ color: '#aaa', fontWeight: 400 }}>(للإشعارات)</span></label>
+                  <label className="form-label">البريد الإلكتروني * <span style={{ color: '#888', fontWeight: 400, fontSize: 12 }}>لاستلام إشعارات الطلبات</span></label>
                   <input className="form-input" type="email" value={form.email}
                     onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                    placeholder="example@email.com" autoComplete="email" />
+                    placeholder="example@email.com" required autoComplete="email" />
                 </div>
                 <div className="form-group">
                   <label className="form-label">كلمة المرور *</label>

@@ -20,11 +20,16 @@ router.post('/register', (req, res) => {
   if (!username || !password) return res.status(400).json({ error: 'اسم المستخدم وكلمة المرور مطلوبان' });
   if (username.length < 3) return res.status(400).json({ error: 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل' });
   if (password.length < 6) return res.status(400).json({ error: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' });
+  if (!email || !email.trim()) return res.status(400).json({ error: 'البريد الإلكتروني مطلوب لاستلام إشعارات الطلبات' });
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email.trim())) return res.status(400).json({ error: 'صيغة البريد الإلكتروني غير صحيحة' });
   const existing = db.prepare('SELECT id FROM users WHERE username = ?').get(username);
   if (existing) return res.status(409).json({ error: 'اسم المستخدم مستخدم بالفعل' });
+  const existingEmail = db.prepare('SELECT id FROM users WHERE email = ?').get(email.trim());
+  if (existingEmail) return res.status(409).json({ error: 'البريد الإلكتروني مستخدم بالفعل' });
   const hash = bcrypt.hashSync(password, 10);
-  const result = db.prepare('INSERT INTO users (username, password, email) VALUES (?, ?, ?)').run(username, hash, email || null);
-  const user = { id: result.lastInsertRowid, username, email: email || null, isAdmin: false };
+  const result = db.prepare('INSERT INTO users (username, password, email) VALUES (?, ?, ?)').run(username, hash, email.trim());
+  const user = { id: result.lastInsertRowid, username, email: email.trim(), isAdmin: false };
   req.session.userId = user.id;
   req.session.isAdmin = false;
   res.json(user);
