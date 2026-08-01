@@ -10,6 +10,9 @@ router.post('/', async (req, res) => {
   if (!customer_name || !customer_phone || !items || !total) {
     return res.status(400).json({ error: 'بيانات ناقصة' });
   }
+  if (!customer_email && !req.session?.userId) {
+    return res.status(400).json({ error: 'البريد الإلكتروني مطلوب لاستلام تأكيد الطلب' });
+  }
   // Use logged-in user's email if not provided
   let email = customer_email || null;
   const userId = req.session?.userId || null;

@@ -156,10 +156,10 @@ export default function CartPage() {
                     placeholder="07XXXXXXXXX" required />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">البريد الإلكتروني <span style={{ color: '#aaa', fontWeight: 400 }}>(لاستلام تأكيد الطلب)</span></label>
+                  <label className="form-label">البريد الإلكتروني * <span style={{ color: '#a8e6c4', fontWeight: 400, fontSize: 12 }}>سيصلك تأكيد الطلب وتحديثات الحالة</span></label>
                   <input className="form-input" type="email" value={form.customer_email}
                     onChange={e => setForm(f => ({ ...f, customer_email: e.target.value }))}
-                    placeholder="example@email.com" />
+                    placeholder="example@email.com" required />
                 </div>
                 <div className="form-group">
                   <label className="form-label">ملاحظات (اختياري)</label>
