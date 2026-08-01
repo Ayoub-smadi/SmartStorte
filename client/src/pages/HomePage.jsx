@@ -293,9 +293,6 @@ export default function HomePage() {
       {/* Farm Illustration */}
       <div style={{ background: '#f0f9f4', padding: '40px 0 10px', borderBottom: '3px solid #c8e6c9' }}>
         <FarmAnimation />
-        <p style={{ textAlign: 'center', color: '#004729', fontWeight: 700, fontSize: 15, paddingBottom: 20, marginTop: -10 }}>
-          🌱 ابدأ رحلتك الزراعية معنا اليوم
-        </p>
       </div>
 
       {/* Categories */}

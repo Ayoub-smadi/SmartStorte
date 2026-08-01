@@ -362,12 +362,6 @@ export default function FarmAnimation() {
           </text>
         ))}
 
-        {/* ── CAPTION BAR ── */}
-        <rect x="0" y="370" width="900" height="30" fill="rgba(0,71,41,0.85)"/>
-        <text x="450" y="390" textAnchor="middle" fill="#a8e6c4"
-          fontFamily="Cairo,sans-serif" fontSize="13" fontWeight="700">
-          🌱 ابدأ رحلتك الزراعية معنا — بذور جودة لكل موسم
-        </text>
       </svg>
     </div>
   );
