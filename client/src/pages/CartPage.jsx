@@ -221,15 +221,12 @@ export default function CartPage() {
                     ))}
                   </select>
                 </div>
-                {user?.email && (
-                  <div style={{ background: '#f0f9f4', border: '1px solid #c8e6c9', borderRadius: 10, padding: '12px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 18 }}>📧</span>
-                    <div>
-                      <div style={{ fontSize: 12, color: '#555', fontWeight: 600 }}>إشعارات الطلب ستُرسل إلى</div>
-                      <div style={{ fontSize: 14, color: '#004729', fontWeight: 800 }}>{user.email}</div>
-                    </div>
-                  </div>
-                )}
+                <div className="form-group">
+                  <label className="form-label">البريد الإلكتروني * <span style={{ color: '#888', fontWeight: 400, fontSize: 12 }}>يصلك تأكيد الطلب وتحديثات الحالة</span></label>
+                  <input className="form-input" type="email" value={form.customer_email}
+                    onChange={e => setForm(f => ({ ...f, customer_email: e.target.value }))}
+                    placeholder="example@email.com" required />
+                </div>
                 <div className="form-group">
                   <label className="form-label">ملاحظات (اختياري)</label>
                   <textarea className="form-textarea" value={form.notes}

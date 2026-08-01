@@ -11,14 +11,18 @@ router.post('/', async (req, res) => {
     return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً لإتمام الطلب' });
   }
 
-  const { customer_name, customer_phone, items, total, notes } = req.body;
+  const { customer_name, customer_phone, customer_email, items, total, notes } = req.body;
   if (!customer_name || !customer_phone || !items || !total) {
     return res.status(400).json({ error: 'بيانات ناقصة' });
   }
 
   const userId = req.session.userId;
   const user = db.prepare('SELECT email FROM users WHERE id = ?').get(userId);
-  const email = user?.email || null;
+  // Use email from form; fallback to account email
+  const email = customer_email?.trim() || user?.email || null;
+  if (!email) {
+    return res.status(400).json({ error: 'البريد الإلكتروني مطلوب لاستلام تأكيد الطلب' });
+  }
 
   // Check stock for each item
   const outOfStockItems = [];
