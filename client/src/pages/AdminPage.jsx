@@ -314,6 +314,100 @@ function SettingsTab({ toast, reloadSettings }) {
   );
 }
 
+const PIE_COLORS = ['#004729','#2e7d32','#FFD700','#FF6F00','#a8e6c4','#81c784','#f9a825','#006635','#aed581','#388e3c'];
+
+function polarToCartesian(cx, cy, r, deg) {
+  const rad = (deg - 90) * Math.PI / 180;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+
+function slicePath(cx, cy, r, start, end) {
+  if (end - start >= 360) end = 359.999;
+  const s = polarToCartesian(cx, cy, r, start);
+  const e = polarToCartesian(cx, cy, r, end);
+  const large = end - start > 180 ? 1 : 0;
+  return `M ${cx} ${cy} L ${s.x} ${s.y} A ${r} ${r} 0 ${large} 1 ${e.x} ${e.y} Z`;
+}
+
+function CategoryPieChart({ categories }) {
+  const [hovered, setHovered] = useState(null);
+  const data = categories.filter(c => Number(c.product_count) > 0);
+  const total = data.reduce((s, c) => s + Number(c.product_count), 0);
+
+  if (!data.length) return (
+    <div style={{ background: '#fff', borderRadius: 16, boxShadow: 'var(--shadow)', border: '1px solid var(--border)', padding: '28px 32px', marginBottom: 24, textAlign: 'center', color: '#aaa', fontSize: 15 }}>
+      📂 لا توجد أقسام بها منتجات بعد
+    </div>
+  );
+
+  let angle = 0;
+  const slices = data.map((c, i) => {
+    const sweep = (Number(c.product_count) / total) * 360;
+    const slice = { ...c, start: angle, end: angle + sweep, color: PIE_COLORS[i % PIE_COLORS.length] };
+    angle += sweep;
+    return slice;
+  });
+
+  const cx = 110, cy = 110, r = 90, ri = 46;
+
+  return (
+    <div style={{ background: '#fff', borderRadius: 16, boxShadow: 'var(--shadow)', border: '1px solid var(--border)', padding: '24px 32px', marginBottom: 24 }}>
+      <h3 style={{ margin: '0 0 20px', fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>📊 توزيع المنتجات على الأقسام</h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'wrap' }}>
+        {/* SVG Pie */}
+        <div style={{ flexShrink: 0, position: 'relative' }}>
+          <svg width={220} height={220} viewBox="0 0 220 220">
+            {slices.map((s, i) => (
+              <path key={s.id}
+                d={slicePath(cx, cy, r, s.start, s.end)}
+                fill={s.color}
+                opacity={hovered === null || hovered === i ? 1 : 0.45}
+                stroke="#fff" strokeWidth={2}
+                style={{ cursor: 'pointer', transition: 'opacity 0.2s, transform 0.2s', transformOrigin: `${cx}px ${cy}px`,
+                  transform: hovered === i ? 'scale(1.04)' : 'scale(1)' }}
+                onMouseEnter={() => setHovered(i)}
+                onMouseLeave={() => setHovered(null)}
+              />
+            ))}
+            {/* Donut hole */}
+            <circle cx={cx} cy={cy} r={ri} fill="#fff" />
+            {/* Center label */}
+            {hovered !== null ? (
+              <>
+                <text x={cx} y={cy - 10} textAnchor="middle" style={{ fontSize: 13, fontWeight: 700, fill: '#333', fontFamily: 'Cairo,sans-serif' }}>{slices[hovered].name}</text>
+                <text x={cx} y={cy + 10} textAnchor="middle" style={{ fontSize: 20, fontWeight: 900, fill: slices[hovered].color, fontFamily: 'Cairo,sans-serif' }}>{slices[hovered].product_count}</text>
+                <text x={cx} y={cy + 26} textAnchor="middle" style={{ fontSize: 11, fill: '#888', fontFamily: 'Cairo,sans-serif' }}>منتج</text>
+              </>
+            ) : (
+              <>
+                <text x={cx} y={cy - 8} textAnchor="middle" style={{ fontSize: 26, fontWeight: 900, fill: '#004729', fontFamily: 'Cairo,sans-serif' }}>{total}</text>
+                <text x={cx} y={cy + 12} textAnchor="middle" style={{ fontSize: 12, fill: '#888', fontFamily: 'Cairo,sans-serif' }}>منتج كلي</text>
+              </>
+            )}
+          </svg>
+        </div>
+
+        {/* Legend */}
+        <div style={{ flex: 1, minWidth: 180, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {slices.map((s, i) => {
+            const pct = Math.round((Number(s.product_count) / total) * 100);
+            return (
+              <div key={s.id}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', opacity: hovered === null || hovered === i ? 1 : 0.5, transition: 'opacity 0.2s' }}
+                onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}>
+                <div style={{ width: 14, height: 14, borderRadius: 4, background: s.color, flexShrink: 0 }} />
+                <div style={{ flex: 1, fontSize: 14, fontWeight: 600, color: 'var(--text)', lineHeight: 1.3 }}>{s.name}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: s.color }}>{s.product_count}</div>
+                <div style={{ fontSize: 12, color: '#aaa', minWidth: 36, textAlign: 'left' }}>{pct}%</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const { toast, reloadSettings } = useApp();
   const [tab, setTab] = useState('products');
@@ -452,6 +546,9 @@ export default function AdminPage() {
 
         {tab !== 'settings' && (loading ? <div className="spinner" /> : (
           <>
+            {/* ── Pie Chart ── */}
+            <CategoryPieChart categories={categories} />
+
             {/* ── Products Tab ── */}
             {tab === 'products' && (
               <div style={{ background: '#fff', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow)', overflow: 'hidden', border: '1px solid var(--border)' }}>
