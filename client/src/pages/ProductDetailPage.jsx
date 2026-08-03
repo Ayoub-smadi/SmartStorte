@@ -125,16 +125,6 @@ export default function ProductDetailPage({ id }) {
               ← العودة
             </button>
           </div>
-
-          {/* Info */}
-          <div style={{ marginTop: 24, padding: 16, background: '#fff', borderRadius: 10, border: '1px solid var(--border)', display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-            {[['🚚', 'توصيل سريع'], ['🔒', 'دفع آمن'], ['↩️', 'إرجاع 7 أيام'], ['🛠️', 'ضمان سنة']].map(([icon, label]) => (
-              <div key={label} style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-light)' }}>
-                <div style={{ fontSize: 22 }}>{icon}</div>
-                <div style={{ fontWeight: 600 }}>{label}</div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
