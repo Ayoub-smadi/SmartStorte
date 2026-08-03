@@ -83,16 +83,17 @@ export async function sendOutOfStockNotification({ to, outOfStockItems, storeNam
     await transporter.sendMail({
       from: s.smtp_from || s.smtp_user,
       to,
-      subject: `⚠️ منتج غير متوفر في طلبك — ${name}`,
+      subject: `❌ تم إلغاء طلبك لعدم توفر المنتج — ${name}`,
       html: `
         <div dir="rtl" style="font-family:Arial,sans-serif;max-width:520px;margin:auto;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden">
-          <div style="background:#FF6F00;padding:28px 32px;text-align:center">
-            <h2 style="color:#fff;margin:0;font-size:22px">⚠️ منتج غير متوفر حالياً</h2>
+          <div style="background:#C62828;padding:28px 32px;text-align:center">
+            <h2 style="color:#fff;margin:0;font-size:22px">❌ تم إلغاء طلبك</h2>
+            <p style="color:rgba(255,255,255,0.8);margin:8px 0 0;font-size:14px">لعدم توفر المنتج حالياً</p>
           </div>
           <div style="padding:28px 32px">
-            <p style="color:#333;font-size:15px;line-height:1.7">عذراً، المنتجات التالية غير متوفرة حالياً في مخزوننا:</p>
-            <ul style="list-style:none;padding:0;margin:16px 0;font-size:14px">${itemsHtml}</ul>
-            <p style="color:#555;font-size:14px;line-height:1.7">يرجى التواصل معنا أو اختيار منتجات بديلة. نعتذر عن الإزعاج.</p>
+            <p style="color:#333;font-size:15px;line-height:1.7">عذراً، تم إلغاء طلبك بسبب نفاد المنتجات التالية من المخزون:</p>
+            <ul style="list-style:none;padding:0;margin:16px 0;font-size:14px;border:1px solid #eee;border-radius:8px;overflow:hidden">${itemsHtml}</ul>
+            <p style="color:#555;font-size:14px;line-height:1.8">نعتذر عن الإزعاج. يمكنك التواصل معنا لمعرفة موعد توفر المنتج أو اختيار منتج بديل.</p>
           </div>
           <div style="background:#f5f7f5;padding:16px 32px;text-align:center;color:#888;font-size:13px">${name}</div>
         </div>
