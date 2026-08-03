@@ -146,21 +146,6 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-
-      {/* Features */}
-      <div style={{ background: '#004729', padding: '60px 0' }}>
-        <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 30, textAlign: 'center' }}>
-            {features.map((f, i) => (
-              <div key={i}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>{f.icon}</div>
-                <div style={{ color: '#a8e6c4', fontWeight: 700, fontSize: 16, marginBottom: 6 }}>{f.title}</div>
-                <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>{f.sub}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
