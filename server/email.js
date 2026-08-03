@@ -13,6 +13,11 @@ function createTransporter(s) {
     port: Number(s.smtp_port) || 587,
     secure: Number(s.smtp_port) === 465,
     auth: { user: s.smtp_user, pass: s.smtp_pass },
+    pool: true,
+    maxConnections: 3,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
   });
 }
 
@@ -110,6 +115,13 @@ export async function sendOrderStatusUpdate({ to, orderId, status, storeName }) 
     pending: '⏳ طلبك قيد المعالجة',
   };
   const label = statusLabels[status] || 'تم تحديث حالة طلبك';
+  const statusMessages = {
+    confirmed: 'تم تأكيد طلبك وسيتم التحضير له قريباً.',
+    delivered: 'طلبك الآن في الطريق إليك 🚚 سيصلك قريباً، شكراً لثقتك بنا!',
+    cancelled: 'تم إلغاء طلبك. إذا كان لديك أي استفسار يرجى التواصل معنا.',
+    pending:   'طلبك قيد المعالجة، سنتواصل معك قريباً.',
+  };
+  const bodyMessage = statusMessages[status] || 'تم تحديث حالة طلبك.';
   try {
     await transporter.sendMail({
       from: s.smtp_from || s.smtp_user,
@@ -122,8 +134,7 @@ export async function sendOrderStatusUpdate({ to, orderId, status, storeName }) 
             <p style="color:rgba(255,255,255,0.75);margin:8px 0 0">رقم الطلب: <strong style="color:#a8e6c4">#${orderId}</strong></p>
           </div>
           <div style="padding:28px 32px;text-align:center">
-            <p style="color:#333;font-size:15px;line-height:1.7">تم تحديث حالة طلبك رقم <strong>#${orderId}</strong>.</p>
-            ${status === 'cancelled' ? '<p style="color:#c62828">إذا كان لديك أي استفسار يرجى التواصل معنا.</p>' : ''}
+            <p style="color:#333;font-size:15px;line-height:1.7">${bodyMessage}</p>
           </div>
           <div style="background:#f5f7f5;padding:16px 32px;text-align:center;color:#888;font-size:13px">${name}</div>
         </div>
