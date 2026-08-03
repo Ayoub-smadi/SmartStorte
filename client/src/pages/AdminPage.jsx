@@ -49,11 +49,11 @@ function ProductForm({ initial, categories, onSave, onClose }) {
       </div>
       <div className="form-row">
         <div className="form-group">
-          <label className="form-label">السعر (د.ع) *</label>
+          <label className="form-label">السعر (د.ا) *</label>
           <input className="form-input" type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} required min="0" />
         </div>
         <div className="form-group">
-          <label className="form-label">السعر القديم (د.ع)</label>
+          <label className="form-label">السعر القديم (د.ا)</label>
           <input className="form-input" type="number" value={form.old_price} onChange={e => setForm(f => ({ ...f, old_price: e.target.value }))} min="0" />
         </div>
       </div>
@@ -137,7 +137,7 @@ function CategoryForm({ initial, onSave, onClose }) {
 const STATUS_MAP = {
   pending:   { label: '⏳ قيد المعالجة', bg: '#FFF8E1', color: '#FF6F00' },
   confirmed: { label: '✅ مؤكد',         bg: '#E8F5E9', color: '#2E7D32' },
-  delivered: { label: '📦 تم التوصيل',   bg: '#E3F2FD', color: '#1565C0' },
+  delivered: { label: '🚚 قيد التوصيل',   bg: '#E3F2FD', color: '#1565C0' },
   cancelled: { label: '❌ ملغي',          bg: '#FFEBEE', color: '#C62828' },
 };
 
@@ -575,7 +575,7 @@ export default function AdminPage() {
                             </div>
                             <div>
                               <div style={{ fontWeight: 700, color: 'var(--text)' }}>{p.name}</div>
-                              {p.old_price && <div style={{ fontSize: 12, color: '#aaa', textDecoration: 'line-through' }}>{p.old_price.toLocaleString()} د.ع</div>}
+                              {p.old_price && <div style={{ fontSize: 12, color: '#aaa', textDecoration: 'line-through' }}>{p.old_price.toLocaleString()} د.ا</div>}
                             </div>
                           </div>
                         </td>
@@ -585,7 +585,7 @@ export default function AdminPage() {
                           </span>
                         </td>
                         <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--primary)', whiteSpace: 'nowrap' }}>
-                          {p.price.toLocaleString()} د.ع
+                          {p.price.toLocaleString()} د.ا
                         </td>
                         <td style={{ padding: '12px 16px' }}>
                           <span className={`badge ${p.stock > 0 ? 'badge-success' : 'badge-danger'}`}>{p.stock}</span>
@@ -656,7 +656,7 @@ export default function AdminPage() {
                             </div>
                             <div style={{ textAlign: 'center', minWidth: 100 }}>
                               <div style={{ fontWeight: 900, fontSize: 16, color: '#004729' }}>{Number(order.total).toLocaleString()}</div>
-                              <div style={{ fontSize: 12, color: '#aaa' }}>دينار عراقي</div>
+                              <div style={{ fontSize: 12, color: '#aaa' }}>دينار أردني</div>
                             </div>
                             <div style={{ minWidth: 120 }}>
                               <span style={{ background: s.bg, color: s.color, padding: '5px 14px', borderRadius: 20, fontWeight: 700, fontSize: 13 }}>
@@ -677,7 +677,7 @@ export default function AdminPage() {
                                   {(order.items || []).map((item, i) => (
                                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', background: '#fff', padding: '10px 14px', borderRadius: 8, border: '1px solid #eee', fontSize: 14 }}>
                                       <span>{item.name} × {item.qty}</span>
-                                      <span style={{ fontWeight: 700, color: '#004729' }}>{(item.price * item.qty).toLocaleString()} د.ع</span>
+                                      <span style={{ fontWeight: 700, color: '#004729' }}>{(item.price * item.qty).toLocaleString()} د.ا</span>
                                     </div>
                                   ))}
                                 </div>

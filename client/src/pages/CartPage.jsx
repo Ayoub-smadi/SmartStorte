@@ -177,8 +177,8 @@ export default function CartPage() {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', marginBottom: 4, lineHeight: 1.3 }}>{product.name}</div>
-                    <div style={{ color: '#004729', fontWeight: 800, fontSize: 15 }}>{(product.price * qty).toLocaleString()} د.ع</div>
-                    <div style={{ fontSize: 13, color: '#aaa' }}>{product.price.toLocaleString()} د.ع × {qty}</div>
+                    <div style={{ color: '#004729', fontWeight: 800, fontSize: 15 }}>{(product.price * qty).toLocaleString()} د.ا</div>
+                    <div style={{ fontSize: 13, color: '#aaa' }}>{product.price.toLocaleString()} د.ا × {qty}</div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#f5f7f5', borderRadius: 10, padding: '4px 8px' }}>
                     <button onClick={() => updateQty(product.id, qty - 1)}

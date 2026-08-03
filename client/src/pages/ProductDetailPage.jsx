@@ -74,12 +74,12 @@ export default function ProductDetailPage({ id }) {
           <div style={{ background: 'linear-gradient(135deg, #e3f0ff, #f0f7ff)', borderRadius: 12, padding: '18px 20px', marginBottom: 24 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
               <span style={{ fontSize: 32, fontWeight: 900, color: 'var(--primary)' }}>{product.price.toLocaleString()}</span>
-              <span style={{ fontSize: 16, color: 'var(--primary)', fontWeight: 600 }}>دينار عراقي</span>
+              <span style={{ fontSize: 16, color: 'var(--primary)', fontWeight: 600 }}>دينار أردني</span>
               {product.old_price && (
-                <span className="price-old" style={{ fontSize: 18 }}>{product.old_price.toLocaleString()} د.ع</span>
+                <span className="price-old" style={{ fontSize: 18 }}>{product.old_price.toLocaleString()} د.ا</span>
               )}
             </div>
-            {discount && <div style={{ color: '#2e7d32', fontWeight: 700, fontSize: 14, marginTop: 6 }}>✅ وفر {(product.old_price - product.price).toLocaleString()} د.ع</div>}
+            {discount && <div style={{ color: '#2e7d32', fontWeight: 700, fontSize: 14, marginTop: 6 }}>✅ وفر {(product.old_price - product.price).toLocaleString()} د.ا</div>}
           </div>
 
           {/* Stock */}

@@ -24,12 +24,12 @@ export async function sendOrderConfirmation({ to, orderId, items, total, shippin
   const fee = Number(shippingFee) || 0;
   const subtotal = Number(total) - fee;
   const itemsHtml = (items || []).map(i =>
-    `<tr><td style="padding:6px 12px;border-bottom:1px solid #eee">${i.name}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:center">${i.qty}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:left">${(i.price*i.qty).toLocaleString()} د.ع</td></tr>`
+    `<tr><td style="padding:6px 12px;border-bottom:1px solid #eee">${i.name}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:center">${i.qty}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:left">${(i.price*i.qty).toLocaleString()} د.ا</td></tr>`
   ).join('');
   const shippingRow = fee > 0 ? `
     <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:14px;color:#555">
       <span>🚚 رسوم التوصيل${governorate ? ` (${governorate})` : ''}</span>
-      <span>${fee.toLocaleString()} د.ع</span>
+      <span>${fee.toLocaleString()} د.ا</span>
     </div>` : '';
   try {
     await transporter.sendMail({
@@ -49,11 +49,11 @@ export async function sendOrderConfirmation({ to, orderId, items, total, shippin
               <tbody>${itemsHtml}</tbody>
             </table>
             <div style="border-top:2px solid #e0e0e0;padding-top:14px;margin-top:4px">
-              ${fee > 0 ? `<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:14px;color:#555"><span>المجموع الفرعي</span><span>${subtotal.toLocaleString()} د.ع</span></div>` : ''}
+              ${fee > 0 ? `<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:14px;color:#555"><span>المجموع الفرعي</span><span>${subtotal.toLocaleString()} د.ا</span></div>` : ''}
               ${shippingRow}
               <div style="background:#f0f9f4;border-radius:8px;padding:14px 18px;margin-top:10px;display:flex;justify-content:space-between;align-items:center">
                 <span style="font-size:15px;font-weight:bold;color:#004729">الإجمالي</span>
-                <span style="font-size:18px;font-weight:900;color:#004729">${Number(total).toLocaleString()} د.ع</span>
+                <span style="font-size:18px;font-weight:900;color:#004729">${Number(total).toLocaleString()} د.ا</span>
               </div>
             </div>
           </div>
@@ -105,7 +105,7 @@ export async function sendOrderStatusUpdate({ to, orderId, status, storeName }) 
   const name = storeName || s.store_name || 'بذور';
   const statusLabels = {
     confirmed: '✅ تم تأكيد طلبك',
-    delivered: '📦 تم توصيل طلبك',
+    delivered: '🚚 طلبك قيد التوصيل',
     cancelled: '❌ تم إلغاء طلبك',
     pending: '⏳ طلبك قيد المعالجة',
   };

@@ -84,7 +84,7 @@ export default function ProductCard({ product }) {
         {/* Price row */}
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 18, fontWeight: 900, color: '#004729' }}>
-            {product.price.toLocaleString()} <span style={{ fontSize: 12, fontWeight: 600 }}>د.ع</span>
+            {product.price.toLocaleString()} <span style={{ fontSize: 12, fontWeight: 600 }}>د.ا</span>
           </span>
           {product.old_price && (
             <span style={{ color: '#aaa', textDecoration: 'line-through', fontSize: 13 }}>

@@ -64,7 +64,7 @@ export default function MyOrdersPage() {
                   </div>
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontWeight: 900, fontSize: 17, color: '#004729' }}>{Number(order.total).toLocaleString()}</div>
-                    <div style={{ fontSize: 12, color: '#aaa' }}>دينار عراقي</div>
+                    <div style={{ fontSize: 12, color: '#aaa' }}>دينار أردني</div>
                   </div>
                   <div>
                     <span style={{ background: s.bg, color: s.color, padding: '6px 16px', borderRadius: 20, fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap' }}>
@@ -82,7 +82,7 @@ export default function MyOrdersPage() {
                       {(order.items || []).map((item, i) => (
                         <div key={i} style={{ display: 'flex', justifyContent: 'space-between', background: '#fff', padding: '10px 16px', borderRadius: 10, border: '1px solid #eee', fontSize: 14 }}>
                           <span style={{ color: '#333' }}>{item.name} <span style={{ color: '#aaa' }}>× {item.qty}</span></span>
-                          <span style={{ fontWeight: 700, color: '#004729' }}>{(item.price * item.qty).toLocaleString()} د.ع</span>
+                          <span style={{ fontWeight: 700, color: '#004729' }}>{(item.price * item.qty).toLocaleString()} د.ا</span>
                         </div>
                       ))}
                     </div>
@@ -93,7 +93,7 @@ export default function MyOrdersPage() {
                     )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f0f9f4', padding: '12px 16px', borderRadius: 10 }}>
                       <span style={{ fontWeight: 700, color: '#004729' }}>المجموع الكلي</span>
-                      <span style={{ fontWeight: 900, fontSize: 17, color: '#004729' }}>{Number(order.total).toLocaleString()} د.ع</span>
+                      <span style={{ fontWeight: 900, fontSize: 17, color: '#004729' }}>{Number(order.total).toLocaleString()} د.ا</span>
                     </div>
                     {order.customer_phone && (
                       <div style={{ marginTop: 10, fontSize: 13, color: '#888' }}>📞 {order.customer_phone}</div>
