@@ -254,6 +254,29 @@ export default function CartPage() {
                 <span style={{ fontWeight: 700, color: '#004729', whiteSpace: 'nowrap' }}>{(product.price * qty).toLocaleString()}</span>
               </div>
             ))}
+
+            {/* Governorate picker shown in cart step so fee is visible before checkout */}
+            {step === 'cart' && (
+              <div style={{ marginTop: 12, marginBottom: 4 }}>
+                <label style={{ fontSize: 13, color: '#555', fontWeight: 600, display: 'block', marginBottom: 6 }}>
+                  🚚 المحافظة (لحساب التوصيل)
+                </label>
+                <select
+                  className="form-select"
+                  value={form.governorate}
+                  onChange={e => setForm(f => ({ ...f, governorate: e.target.value }))}
+                  style={{ fontSize: 13, padding: '7px 10px' }}
+                >
+                  <option value="">اختر محافظتك...</option>
+                  {GOVERNORATES.map(g => (
+                    <option key={g.name} value={g.name}>
+                      {g.name} — {g.fee} دينار
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <div style={{ borderTop: '2px solid #f0f0f0', marginTop: 16, paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: '#555' }}>
                 <span>المجموع الفرعي</span>
