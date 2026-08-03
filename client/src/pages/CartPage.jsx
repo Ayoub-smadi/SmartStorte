@@ -2,18 +2,18 @@ import { useState } from 'react';
 import { useApp } from '../App.jsx';
 
 const GOVERNORATES = [
-  { name: 'عمّان',   fee: 2 },
-  { name: 'إربد',   fee: 3 },
-  { name: 'الزرقاء', fee: 3 },
-  { name: 'البلقاء', fee: 3 },
-  { name: 'مادبا',  fee: 3 },
-  { name: 'الكرك',  fee: 3 },
-  { name: 'الطفيلة', fee: 3 },
-  { name: 'معان',   fee: 3 },
-  { name: 'العقبة', fee: 3 },
-  { name: 'جرش',   fee: 3 },
-  { name: 'عجلون', fee: 3 },
-  { name: 'المفرق', fee: 3 },
+  { name: 'عمّان',   fee: 2000 },
+  { name: 'إربد',   fee: 3000 },
+  { name: 'الزرقاء', fee: 3000 },
+  { name: 'البلقاء', fee: 3000 },
+  { name: 'مادبا',  fee: 3000 },
+  { name: 'الكرك',  fee: 3000 },
+  { name: 'الطفيلة', fee: 3000 },
+  { name: 'معان',   fee: 3000 },
+  { name: 'العقبة', fee: 3000 },
+  { name: 'جرش',   fee: 3000 },
+  { name: 'عجلون', fee: 3000 },
+  { name: 'المفرق', fee: 3000 },
 ];
 
 export default function CartPage() {
