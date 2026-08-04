@@ -48,9 +48,19 @@ app.use('/api/categories', categoriesRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/settings', settingsRouter);
 
-// Local dev only
+// Serve built frontend in production (Render, Railway, etc.)
+if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
+  const distPath = path.join(__dirname, '..', 'dist');
+  app.use(express.static(distPath));
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
+
+// Start server (skip on Vercel serverless)
 if (!process.env.VERCEL) {
-  app.listen(PORT, () => console.log(`🚀 API server running on port ${PORT}`));
+  const listenPort = process.env.PORT || PORT;
+  app.listen(listenPort, () => console.log(`🚀 API server running on port ${listenPort}`));
 }
 
 export default app;
