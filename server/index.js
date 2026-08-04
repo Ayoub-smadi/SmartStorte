@@ -48,9 +48,9 @@ app.use('/api/categories', categoriesRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/settings', settingsRouter);
 
-// Serve built frontend in production (Render, Railway, etc.)
-if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
-  const distPath = path.join(__dirname, '..', 'dist');
+// Serve built frontend whenever dist/ exists (Render, Railway, etc.)
+const distPath = path.join(__dirname, '..', 'dist');
+if (!process.env.VERCEL && fs.existsSync(distPath)) {
   app.use(express.static(distPath));
   app.get('*', (_req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
