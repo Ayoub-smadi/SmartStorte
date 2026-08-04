@@ -13,8 +13,8 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'بيانات الدخول غير صحيحة' });
     }
     req.session.userId = user.id;
-    req.session.isAdmin = user.is_admin === 1;
-    res.json({ id: user.id, username: user.username, email: user.email, isAdmin: user.is_admin === 1 });
+    req.session.isAdmin = Number(user.is_admin) === 1;
+    res.json({ id: user.id, username: user.username, email: user.email, isAdmin: Number(user.is_admin) === 1 });
   } catch (e) {
     res.status(500).json({ error: 'خطأ في الخادم' });
   }
@@ -60,7 +60,7 @@ router.get('/me', async (req, res) => {
     const { rows } = await pool.query('SELECT id, username, email, is_admin FROM users WHERE id = $1', [req.session.userId]);
     const user = rows[0];
     if (!user) return res.json(null);
-    res.json({ id: user.id, username: user.username, email: user.email, isAdmin: user.is_admin === 1 });
+    res.json({ id: user.id, username: user.username, email: user.email, isAdmin: Number(user.is_admin) === 1 });
   } catch (e) {
     res.json(null);
   }
