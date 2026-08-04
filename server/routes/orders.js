@@ -1,61 +1,57 @@
 import express from 'express';
-import db from '../database.js';
+import { pool } from '../database.js';
 import { sendOrderConfirmation, sendOrderStatusUpdate, sendOutOfStockNotification } from '../email.js';
 
 const router = express.Router();
 
 // Place an order — requires login
 router.post('/', async (req, res) => {
-  // Must be logged in to place an order
   if (!req.session?.userId) {
     return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً لإتمام الطلب' });
   }
-
   const { customer_name, customer_phone, customer_email, items, total, shipping_fee, governorate, notes } = req.body;
   if (!customer_name || !customer_phone || !items || !total) {
     return res.status(400).json({ error: 'بيانات ناقصة' });
   }
-
-  const userId = req.session.userId;
-  const user = db.prepare('SELECT email FROM users WHERE id = ?').get(userId);
-  // Use email from form; fallback to account email
-  const email = customer_email?.trim() || user?.email || null;
-  if (!email) {
-    return res.status(400).json({ error: 'البريد الإلكتروني مطلوب لاستلام تأكيد الطلب' });
-  }
-
-  // Check stock for each item
-  const outOfStockItems = [];
-  for (const item of items) {
-    const product = db.prepare('SELECT name, stock FROM products WHERE id = ?').get(item.id);
-    if (product && product.stock !== null && product.stock <= 0) {
-      outOfStockItems.push({ id: item.id, name: product.name });
-    }
-  }
-  if (outOfStockItems.length > 0) {
-    // Notify user by email about out-of-stock items
-    const storeName = db.prepare("SELECT value FROM site_settings WHERE key='store_name'").get()?.value;
-    sendOutOfStockNotification({ to: email, outOfStockItems, storeName }).catch(() => {});
-    return res.status(400).json({
-      error: `المنتجات التالية غير متوفرة حالياً: ${outOfStockItems.map(i => i.name).join('، ')}`,
-    });
-  }
-
   try {
-    const fee = Number(shipping_fee) || 0;
-    const result = db.prepare(
-      `INSERT INTO orders (user_id, customer_name, customer_phone, customer_email, items, total, shipping_fee, governorate, notes)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).run(userId, customer_name, customer_phone, email, JSON.stringify(items), total, fee, governorate || null, notes || null);
-    const orderId = result.lastInsertRowid;
+    const userId = req.session.userId;
+    const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [userId]);
+    const email = customer_email?.trim() || userRes.rows[0]?.email || null;
+    if (!email) return res.status(400).json({ error: 'البريد الإلكتروني مطلوب' });
 
-    // Decrement stock for each ordered item
+    // Check stock
+    const outOfStockItems = [];
     for (const item of items) {
-      db.prepare('UPDATE products SET stock = MAX(0, stock - ?) WHERE id = ?').run(item.qty || 1, item.id);
+      const { rows } = await pool.query('SELECT name, stock FROM products WHERE id = $1', [item.id]);
+      const product = rows[0];
+      if (product && product.stock !== null && product.stock <= 0) {
+        outOfStockItems.push({ id: item.id, name: product.name });
+      }
+    }
+    if (outOfStockItems.length > 0) {
+      const storeRes = await pool.query("SELECT value FROM site_settings WHERE key='store_name'");
+      const storeName = storeRes.rows[0]?.value;
+      sendOutOfStockNotification({ to: email, outOfStockItems, storeName }).catch(() => {});
+      return res.status(400).json({
+        error: `المنتجات التالية غير متوفرة حالياً: ${outOfStockItems.map(i => i.name).join('، ')}`,
+      });
     }
 
-    // Send confirmation email asynchronously
-    const storeName = db.prepare("SELECT value FROM site_settings WHERE key='store_name'").get()?.value;
+    const fee = Number(shipping_fee) || 0;
+    const result = await pool.query(
+      `INSERT INTO orders (user_id, customer_name, customer_phone, customer_email, items, total, shipping_fee, governorate, notes)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
+      [userId, customer_name, customer_phone, email, JSON.stringify(items), total, fee, governorate || null, notes || null]
+    );
+    const orderId = result.rows[0].id;
+
+    // Decrement stock
+    for (const item of items) {
+      await pool.query('UPDATE products SET stock = GREATEST(0, stock - $1) WHERE id = $2', [item.qty || 1, item.id]);
+    }
+
+    const storeRes = await pool.query("SELECT value FROM site_settings WHERE key='store_name'");
+    const storeName = storeRes.rows[0]?.value;
     sendOrderConfirmation({ to: email, orderId, items, total, shippingFee: fee, governorate: governorate || null, storeName }).catch(() => {});
     res.json({ id: orderId, message: 'تم إرسال طلبك بنجاح' });
   } catch (e) {
@@ -65,40 +61,56 @@ router.post('/', async (req, res) => {
 });
 
 // Get all orders (admin)
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   if (!req.session?.isAdmin) return res.status(403).json({ error: 'غير مصرح' });
-  const orders = db.prepare(`SELECT * FROM orders ORDER BY created_at DESC`).all();
-  res.json(orders.map(o => ({ ...o, items: JSON.parse(o.items) })));
+  try {
+    const { rows } = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
+    res.json(rows.map(o => ({ ...o, items: JSON.parse(o.items) })));
+  } catch (e) {
+    res.status(500).json({ error: 'خطأ في الخادم' });
+  }
 });
 
 // Get current user's orders
-router.get('/my', (req, res) => {
+router.get('/my', async (req, res) => {
   if (!req.session?.userId) return res.status(401).json({ error: 'يجب تسجيل الدخول' });
-  const orders = db.prepare(`SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC`).all(req.session.userId);
-  res.json(orders.map(o => ({ ...o, items: JSON.parse(o.items) })));
+  try {
+    const { rows } = await pool.query('SELECT * FROM orders WHERE user_id = $1 ORDER BY created_at DESC', [req.session.userId]);
+    res.json(rows.map(o => ({ ...o, items: JSON.parse(o.items) })));
+  } catch (e) {
+    res.status(500).json({ error: 'خطأ في الخادم' });
+  }
 });
 
-// Update order status (admin) - also sends status email
+// Update order status (admin)
 router.put('/:id', async (req, res) => {
   if (!req.session?.isAdmin) return res.status(403).json({ error: 'غير مصرح' });
-  const { status } = req.body;
-  const allowed = ['pending', 'confirmed', 'delivered', 'cancelled'];
-  if (!allowed.includes(status)) return res.status(400).json({ error: 'حالة غير صحيحة' });
-  db.prepare(`UPDATE orders SET status = ? WHERE id = ?`).run(status, req.params.id);
-  // Send status update email
-  const order = db.prepare('SELECT customer_email FROM orders WHERE id = ?').get(req.params.id);
-  const storeName = db.prepare("SELECT value FROM site_settings WHERE key='store_name'").get()?.value;
-  if (order?.customer_email) {
-    sendOrderStatusUpdate({ to: order.customer_email, orderId: req.params.id, status, storeName }).catch(() => {});
+  try {
+    const { status } = req.body;
+    const allowed = ['pending', 'confirmed', 'delivered', 'cancelled'];
+    if (!allowed.includes(status)) return res.status(400).json({ error: 'حالة غير صحيحة' });
+    await pool.query('UPDATE orders SET status = $1 WHERE id = $2', [status, req.params.id]);
+    const orderRes = await pool.query('SELECT customer_email FROM orders WHERE id = $1', [req.params.id]);
+    const storeRes = await pool.query("SELECT value FROM site_settings WHERE key='store_name'");
+    const storeName = storeRes.rows[0]?.value;
+    if (orderRes.rows[0]?.customer_email) {
+      sendOrderStatusUpdate({ to: orderRes.rows[0].customer_email, orderId: req.params.id, status, storeName }).catch(() => {});
+    }
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: 'خطأ في الخادم' });
   }
-  res.json({ ok: true });
 });
 
 // Delete order (admin)
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   if (!req.session?.isAdmin) return res.status(403).json({ error: 'غير مصرح' });
-  db.prepare(`DELETE FROM orders WHERE id = ?`).run(req.params.id);
-  res.json({ ok: true });
+  try {
+    await pool.query('DELETE FROM orders WHERE id = $1', [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: 'خطأ في الخادم' });
+  }
 });
 
 export default router;

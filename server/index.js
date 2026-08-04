@@ -1,10 +1,11 @@
 import express from 'express';
 import session from 'express-session';
+import connectPgSimple from 'connect-pg-simple';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
-import './database.js';
+import { pool } from './database.js';
 import authRouter from './routes/auth.js';
 import productsRouter from './routes/products.js';
 import categoriesRouter from './routes/categories.js';
@@ -14,8 +15,9 @@ import settingsRouter from './routes/settings.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = 3001;
+const PgSession = connectPgSimple(session);
 
-// Uploads dir
+// Uploads dir (local dev)
 const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
@@ -23,10 +25,19 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'electric-store-secret-2024',
+  store: new PgSession({
+    pool,
+    tableName: 'session',
+    createTableIfMissing: true,
+  }),
+  secret: process.env.SESSION_SECRET || 'seeds-store-secret-2024',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 24 * 60 * 60 * 1000,
+  },
 }));
 
 app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads')));
@@ -37,6 +48,9 @@ app.use('/api/categories', categoriesRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/settings', settingsRouter);
 
-app.listen(PORT, () => {
-  console.log(`🚀 API server running on port ${PORT}`);
-});
+// Local dev only
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => console.log(`🚀 API server running on port ${PORT}`));
+}
+
+export default app;

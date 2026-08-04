@@ -1,8 +1,8 @@
 import nodemailer from 'nodemailer';
-import db from './database.js';
+import { pool } from './database.js';
 
-function getSettings() {
-  const rows = db.prepare('SELECT key, value FROM site_settings').all();
+async function getSettings() {
+  const { rows } = await pool.query('SELECT key, value FROM site_settings');
   return Object.fromEntries(rows.map(r => [r.key, r.value]));
 }
 
@@ -22,14 +22,14 @@ function createTransporter(s) {
 }
 
 export async function sendOrderConfirmation({ to, orderId, items, total, shippingFee, governorate, storeName }) {
-  const s = getSettings();
+  const s = await getSettings();
   const transporter = createTransporter(s);
   if (!transporter || !to) return;
   const name = storeName || s.store_name || 'بذور';
   const fee = Number(shippingFee) || 0;
   const subtotal = Number(total) - fee;
   const itemsHtml = (items || []).map(i =>
-    `<tr><td style="padding:6px 12px;border-bottom:1px solid #eee">${i.name}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:center">${i.qty}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:left">${(i.price*i.qty).toLocaleString()} د.ا</td></tr>`
+    `<tr><td style="padding:6px 12px;border-bottom:1px solid #eee">${i.name}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:center">${i.qty}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:left">${(i.price * i.qty).toLocaleString()} د.ا</td></tr>`
   ).join('');
   const shippingRow = fee > 0 ? `
     <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:14px;color:#555">
@@ -67,12 +67,12 @@ export async function sendOrderConfirmation({ to, orderId, items, total, shippin
       `,
     });
   } catch (err) {
-    console.error('Email send error:', err.message);
+    console.error('Email error:', err.message);
   }
 }
 
 export async function sendOutOfStockNotification({ to, outOfStockItems, storeName }) {
-  const s = getSettings();
+  const s = await getSettings();
   const transporter = createTransporter(s);
   if (!transporter || !to) return;
   const name = storeName || s.store_name || 'بذور';
@@ -100,12 +100,12 @@ export async function sendOutOfStockNotification({ to, outOfStockItems, storeNam
       `,
     });
   } catch (err) {
-    console.error('Email send error:', err.message);
+    console.error('Email error:', err.message);
   }
 }
 
 export async function sendOrderStatusUpdate({ to, orderId, status, storeName }) {
-  const s = getSettings();
+  const s = await getSettings();
   const transporter = createTransporter(s);
   if (!transporter || !to) return;
   const name = storeName || s.store_name || 'بذور';
@@ -115,13 +115,13 @@ export async function sendOrderStatusUpdate({ to, orderId, status, storeName }) 
     cancelled: '❌ تم إلغاء طلبك',
     pending: '⏳ طلبك قيد المعالجة',
   };
-  const label = statusLabels[status] || 'تم تحديث حالة طلبك';
   const statusMessages = {
     confirmed: 'تم تأكيد طلبك وسيتم التحضير له قريباً.',
     delivered: 'طلبك الآن في الطريق إليك 🚚 سيصلك قريباً، شكراً لثقتك بنا!',
     cancelled: 'تم إلغاء طلبك. إذا كان لديك أي استفسار يرجى التواصل معنا.',
-    pending:   'طلبك قيد المعالجة، سنتواصل معك قريباً.',
+    pending: 'طلبك قيد المعالجة، سنتواصل معك قريباً.',
   };
+  const label = statusLabels[status] || 'تم تحديث حالة طلبك';
   const bodyMessage = statusMessages[status] || 'تم تحديث حالة طلبك.';
   try {
     await transporter.sendMail({
@@ -142,6 +142,6 @@ export async function sendOrderStatusUpdate({ to, orderId, status, storeName }) 
       `,
     });
   } catch (err) {
-    console.error('Email send error:', err.message);
+    console.error('Email error:', err.message);
   }
 }
