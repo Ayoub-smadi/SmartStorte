@@ -18,7 +18,7 @@ export default function HomePage() {
       fetch('/api/products?limit=8').then(r => r.json()),
     ]).then(([cats, feat, lat]) => {
       setCategories(cats); setFeatured(feat); setLatest(lat); setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, []);
 
   const storeName = settings?.store_name || 'بذور';

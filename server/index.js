@@ -15,7 +15,6 @@ import settingsRouter from './routes/settings.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = 3001;
-const PgSession = connectPgSimple(session);
 
 // Uploads dir (local dev)
 const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
@@ -24,12 +23,15 @@ if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Use Postgres session store only when a DB connection string is available
+const hasDb = !!(process.env.NEON_DATABASE_URL || process.env.DATABASE_URL);
+const sessionStore = hasDb
+  ? new (connectPgSimple(session))({ pool, tableName: 'session', createTableIfMissing: true })
+  : undefined; // falls back to MemoryStore (fine for single-instance)
+
 app.use(session({
-  store: new PgSession({
-    pool,
-    tableName: 'session',
-    createTableIfMissing: true,
-  }),
+  ...(sessionStore ? { store: sessionStore } : {}),
   secret: process.env.SESSION_SECRET || 'seeds-store-secret-2024',
   resave: false,
   saveUninitialized: false,
