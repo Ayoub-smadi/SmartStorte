@@ -21,7 +21,7 @@ export default function ProductsPage({ categoryId }) {
   }, []);
 
   useEffect(() => {
-    fetch('/api/categories').then(r => r.json()).then(setCategories);
+    fetch('/api/categories').then(r => r.json()).then(d => setCategories(Array.isArray(d) ? d : []));
   }, []);
 
   useEffect(() => {
@@ -32,9 +32,9 @@ export default function ProductsPage({ categoryId }) {
     if (featured) params.set('featured', '1');
     params.set('limit', '60');
     fetch(`/api/products?${params}`).then(r => r.json()).then(data => {
-      setProducts(data);
+      setProducts(Array.isArray(data) ? data : []);
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, [activeCat, search, featured]);
 
   const currentCat = categories.find(c => String(c.id) === String(activeCat));

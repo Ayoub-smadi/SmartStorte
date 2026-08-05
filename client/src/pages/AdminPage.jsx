@@ -422,12 +422,18 @@ export default function AdminPage() {
 
   const loadAll = async () => {
     setLoading(true);
-    const [prods, cats, ords] = await Promise.all([
-      fetch('/api/products?limit=200', { credentials: 'include' }).then(r => r.json()),
-      fetch('/api/categories', { credentials: 'include' }).then(r => r.json()),
-      fetch('/api/orders', { credentials: 'include' }).then(r => r.json()),
-    ]);
-    setProducts(prods); setCategories(cats); setOrders(ords);
+    try {
+      const [prods, cats, ords] = await Promise.all([
+        fetch('/api/products?limit=200', { credentials: 'include' }).then(r => r.json()),
+        fetch('/api/categories', { credentials: 'include' }).then(r => r.json()),
+        fetch('/api/orders', { credentials: 'include' }).then(r => r.json()),
+      ]);
+      setProducts(Array.isArray(prods) ? prods : []);
+      setCategories(Array.isArray(cats) ? cats : []);
+      setOrders(Array.isArray(ords) ? ords : []);
+    } catch (e) {
+      setProducts([]); setCategories([]); setOrders([]);
+    }
     setLoading(false);
   };
 
