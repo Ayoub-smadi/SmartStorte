@@ -77,21 +77,68 @@ export default function FarmAnimation() {
   }
   .farmer-flip { animation: farmerFlip ${D} step-start infinite; transform-origin: 20px 200px; }
 
-  /* ─── LEFT LEG WALK ─── */
+  /* ─── LEFT LEG WALK (multiple oscillations = natural steps) ─── */
   @keyframes legL {
-    0%   { transform:rotate(22deg); }
-    10%  { transform:rotate(-22deg); }
-    21%  { transform:rotate(22deg); }
-    22%,100%{ transform:rotate(0deg); }
+    /* Phase 1: walking across field — 8 full step cycles in 0→21% */
+    0%    { transform:rotate(28deg); }
+    1.31% { transform:rotate(-28deg); }
+    2.63% { transform:rotate(28deg); }
+    3.94% { transform:rotate(-28deg); }
+    5.25% { transform:rotate(28deg); }
+    6.56% { transform:rotate(-28deg); }
+    7.88% { transform:rotate(28deg); }
+    9.19% { transform:rotate(-28deg); }
+    10.5% { transform:rotate(28deg); }
+    11.81%{ transform:rotate(-28deg); }
+    13.13%{ transform:rotate(28deg); }
+    14.44%{ transform:rotate(-28deg); }
+    15.75%{ transform:rotate(28deg); }
+    17.06%{ transform:rotate(-28deg); }
+    18.38%{ transform:rotate(28deg); }
+    19.69%{ transform:rotate(-28deg); }
+    21%   { transform:rotate(0deg); }
+    /* Phase 2: hidden inside house */
+    33%,79% { transform:rotate(0deg); }
+    /* Phase 3: short walk after exit — 3 cycles in 80→88% */
+    80%   { transform:rotate(28deg); }
+    81.33%{ transform:rotate(-28deg); }
+    82.67%{ transform:rotate(28deg); }
+    84%   { transform:rotate(-28deg); }
+    85.33%{ transform:rotate(28deg); }
+    86.67%{ transform:rotate(-28deg); }
+    88%,100%{ transform:rotate(0deg); }
   }
   .leg-l { animation: legL ${D} ease-in-out infinite; transform-origin:14px 238px; }
 
-  /* ─── RIGHT LEG WALK ─── */
+  /* ─── RIGHT LEG WALK (opposite phase from left) ─── */
   @keyframes legR {
-    0%   { transform:rotate(-22deg); }
-    10%  { transform:rotate(22deg); }
-    21%  { transform:rotate(-22deg); }
-    22%,100%{ transform:rotate(0deg); }
+    /* Phase 1: opposite of legL */
+    0%    { transform:rotate(-28deg); }
+    1.31% { transform:rotate(28deg); }
+    2.63% { transform:rotate(-28deg); }
+    3.94% { transform:rotate(28deg); }
+    5.25% { transform:rotate(-28deg); }
+    6.56% { transform:rotate(28deg); }
+    7.88% { transform:rotate(-28deg); }
+    9.19% { transform:rotate(28deg); }
+    10.5% { transform:rotate(-28deg); }
+    11.81%{ transform:rotate(28deg); }
+    13.13%{ transform:rotate(-28deg); }
+    14.44%{ transform:rotate(28deg); }
+    15.75%{ transform:rotate(-28deg); }
+    17.06%{ transform:rotate(28deg); }
+    18.38%{ transform:rotate(-28deg); }
+    19.69%{ transform:rotate(28deg); }
+    21%   { transform:rotate(0deg); }
+    33%,79% { transform:rotate(0deg); }
+    /* Phase 3: opposite of legL */
+    80%   { transform:rotate(-28deg); }
+    81.33%{ transform:rotate(28deg); }
+    82.67%{ transform:rotate(-28deg); }
+    84%   { transform:rotate(28deg); }
+    85.33%{ transform:rotate(-28deg); }
+    86.67%{ transform:rotate(28deg); }
+    88%,100%{ transform:rotate(0deg); }
   }
   .leg-r { animation: legR ${D} ease-in-out infinite; transform-origin:28px 238px; }
 
@@ -300,13 +347,17 @@ export default function FarmAnimation() {
               {/* Shadow */}
               <ellipse cx="20" cy="268" rx="24" ry="7" fill="rgba(0,0,0,0.18)"/>
 
-              {/* Left leg */}
-              <rect className="leg-l" x="7" y="238" width="13" height="30" fill="#1565C0" rx="5"/>
-              <ellipse cx="13" cy="268" rx="10" ry="5.5" fill="#3E2723"/>
+              {/* Left leg + shoe (grouped so shoe follows leg rotation) */}
+              <g className="leg-l">
+                <rect x="7" y="238" width="13" height="30" fill="#1565C0" rx="5"/>
+                <ellipse cx="13" cy="269" rx="10" ry="5" fill="#3E2723"/>
+              </g>
 
-              {/* Right leg */}
-              <rect className="leg-r" x="22" y="238" width="13" height="30" fill="#1565C0" rx="5"/>
-              <ellipse cx="28" cy="268" rx="10" ry="5.5" fill="#3E2723"/>
+              {/* Right leg + shoe (grouped so shoe follows leg rotation) */}
+              <g className="leg-r">
+                <rect x="22" y="238" width="13" height="30" fill="#1565C0" rx="5"/>
+                <ellipse cx="28" cy="269" rx="10" ry="5" fill="#3E2723"/>
+              </g>
 
               {/* Body */}
               <rect x="5" y="198" width="32" height="42" fill="#1565C0" rx="8"/>
